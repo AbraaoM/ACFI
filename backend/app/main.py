@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from .controllers import session_controller
+from .controllers import session_controller, chat_controller
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +21,7 @@ app.add_middleware(
 
 # Incluir routers
 app.include_router(session_controller.router, prefix="/api/v1")
+app.include_router(chat_controller.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
