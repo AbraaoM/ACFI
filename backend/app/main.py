@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
+from .controllers import session_controller
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
@@ -17,7 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Incluir routers
+app.include_router(session_controller.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
@@ -25,4 +28,4 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
