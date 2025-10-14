@@ -4,9 +4,11 @@ from typing import List, Optional
 
 from ..database import get_db
 from ..services.document_service import DocumentService
+from ..services.rag_service import RAGService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 document_service = DocumentService()
+rag_service = RAGService()
 
 # UPLOAD AND PROCESS DOCUMENT
 @router.post("/upload", response_model=dict, status_code=status.HTTP_201_CREATED)
@@ -17,14 +19,30 @@ def upload_document(
     """Upload e processa um documento"""
     return document_service.upload_and_process_document(db, file)
 
-# SEARCH DOCUMENTS BY SIMILARITY
-@router.get("/search", response_model=List[dict])
+# SEARCH DOCUMENTS BY SIMILARITY usando RAGService
+@router.get("/search", response_model=dict)
 def search_documents(
     query: str = Query(..., description="Query para busca por similaridade"),
     k: int = Query(5, description="Número de resultados")
 ):
-    """Busca documentos por similaridade usando embeddings"""
-    return document_service.search_documents(query, k)
+    """Busca documentos por similaridade usando RAGService"""
+    rag_result = rag_service.vector_service.rag_query(query, k)
+    
+    return {
+        "query": query,
+        "results": rag_result["context_chunks"],
+        "total_found": rag_result["chunks_found"],
+        "summary": rag_result["context_summary"]
+    }
+
+# SEARCH WITH RAG ANSWER - Nova funcionalidade
+@router.get("/ask", response_model=dict)
+def ask_about_documents(
+    question: str = Query(..., description="Pergunta sobre os documentos"),
+    k: int = Query(5, description="Número de chunks para análise")
+):
+    """Faz uma pergunta sobre os documentos usando RAG completo"""
+    return rag_service.ask_question_with_citations(question, k)
 
 # READ ALL DOCUMENTS
 @router.get("/", response_model=List[dict])
@@ -56,3 +74,9 @@ def get_document(document_id: str, db: DBSession = Depends(get_db)):
 def delete_document(document_id: str, db: DBSession = Depends(get_db)):
     """Deleta um documento do banco e do vector store"""
     return document_service.delete_document(db, document_id)
+
+# GET VECTOR STORE INFO
+@router.get("/vector/info", response_model=dict)
+def get_vector_store_info():
+    """Informações sobre o vector store"""
+    return rag_service.vector_service.get_collection_info()
