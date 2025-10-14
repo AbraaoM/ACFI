@@ -32,3 +32,10 @@ coverage.xml
 instance/
 *.db
 data/
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/.gitkeep
+alembic/__pycache__/
+*.sqlite
+*.sqlite3
