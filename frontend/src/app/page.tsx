@@ -21,12 +21,12 @@ export default function Home() {
               <span className="badge badge-success badge-lg rounded-full">Calculadoras</span>
               <span className="badge badge-warning badge-lg rounded-full">Dashboard</span>
             </div>
-            <button className="btn btn-accent btn-lg rounded-full">
+            <a href="/codigo-tributario" className="btn btn-accent btn-lg rounded-full">
               Começar Agora
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
               </svg>
-            </button>
+            </a>
           </div>
         </div>
       </section>
@@ -55,9 +55,9 @@ export default function Home() {
                   Perguntas e respostas inteligentes com citações precisas.
                 </p>
                 <div className="card-actions justify-center">
-                  <button className="btn btn-primary rounded-full">
+                  <a href="/codigo-tributario" className="btn btn-primary rounded-full">
                     Consultar Código
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -173,9 +173,9 @@ export default function Home() {
             com o poder da inteligência artificial.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <button className="btn btn-accent btn-lg rounded-full">
+            <a href="/codigo-tributario" className="btn btn-accent btn-lg rounded-full">
               Começar Agora
-            </button>
+            </a>
             <button className="btn btn-outline btn-lg rounded-full border-secondary-content text-secondary-content hover:bg-secondary-content hover:text-primary hover:border-secondary-content">
               Saiba Mais
             </button>
