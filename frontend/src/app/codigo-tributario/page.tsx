@@ -1,22 +1,18 @@
 "use client";
 
 import { useState } from 'react';
-
-interface Message {
-  id: string;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  sources?: string[];
-}
+import { ChatMessage, ChatSession } from '@/models';
 
 export default function CodigoTributario() {
-  const [messages, setMessages] = useState<Message[]>([
+  const [session, setSession] = useState<ChatSession | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      type: 'assistant',
+      session_id: 'temp',
+      role: 'assistant',
       content: 'Olá! Sou o assistente do Código Tributário. Posso ajudá-lo com consultas sobre legislação fiscal, impostos, tributos e regulamentações. Como posso ajudá-lo hoje?',
-      timestamp: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
@@ -25,11 +21,13 @@ export default function CodigoTributario() {
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
 
-    const newMessage: Message = {
+    const newMessage: ChatMessage = {
       id: Date.now().toString(),
-      type: 'user',
+      session_id: session?.id || 'temp',
+      role: 'user',
       content: inputMessage,
-      timestamp: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     };
 
     setMessages(prev => [...prev, newMessage]);
@@ -38,12 +36,18 @@ export default function CodigoTributario() {
 
     // Simular resposta do assistente (remover quando integrar com backend)
     setTimeout(() => {
-      const assistantMessage: Message = {
+      const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        type: 'assistant',
+        session_id: session?.id || 'temp',
+        role: 'assistant',
         content: 'Esta é uma resposta simulada. Quando integrado com o backend, aqui aparecerá a resposta real do sistema RAG com base no código tributário.',
-        timestamp: new Date(),
-        sources: ['Lei 5.172/1966 - CTN', 'Decreto 70.235/1972']
+        metadata: {
+          sources: ['Lei 5.172/1966 - CTN', 'Decreto 70.235/1972'],
+          confidence: 0.95,
+          processing_time: 1.2,
+        },
+        created_at: new Date(),
+        updated_at: new Date(),
       };
       setMessages(prev => [...prev, assistantMessage]);
       setIsTyping(false);
@@ -136,11 +140,11 @@ export default function CodigoTributario() {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`chat ${message.type === 'user' ? 'chat-end' : 'chat-start'}`}
+                  className={`chat ${message.role === 'user' ? 'chat-end' : 'chat-start'}`}
                 >
                   <div className="chat-image avatar">
                     <div className="w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      {message.type === 'user' ? (
+                      {message.role === 'user' ? (
                         <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -152,19 +156,19 @@ export default function CodigoTributario() {
                     </div>
                   </div>
                   <div className="chat-header">
-                    {message.type === 'user' ? 'Você' : 'Assistente ACFI'}
+                    {message.role === 'user' ? 'Você' : 'Assistente ACFI'}
                     <time className="text-xs opacity-50 ml-2">
-                      {message.timestamp.toLocaleTimeString()}
+                      {message.created_at.toLocaleTimeString()}
                     </time>
                   </div>
-                  <div className={`chat-bubble ${message.type === 'user' ? 'chat-bubble-primary' : 'chat-bubble-accent'} rounded-2xl`}>
+                  <div className={`chat-bubble ${message.role === 'user' ? 'chat-bubble-primary' : 'chat-bubble-accent'} rounded-2xl`}>
                     {message.content}
                   </div>
-                  {message.sources && (
+                  {message.metadata?.sources && (
                     <div className="chat-footer">
                       <div className="mt-2 text-xs opacity-70">
                         <span className="font-medium">Fontes: </span>
-                        {message.sources.join(', ')}
+                        {message.metadata.sources.join(', ')}
                       </div>
                     </div>
                   )}
