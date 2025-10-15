@@ -32,6 +32,7 @@ coverage.xml
 instance/
 *.db
 data/
+uploads/
 
 # Alembic
 alembic/__pycache__/
