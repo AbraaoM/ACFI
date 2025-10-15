@@ -21,6 +21,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 from app.models.session_model import Base
 from app.models.chat_model import Chat  # Importa o Chat para incluir na metadata
+from app.models.document_model import Document  # Importa o Document para incluir na metadata
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
