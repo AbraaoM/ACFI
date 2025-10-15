@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { ChatMessage, ChatSession } from '@/models';
+import ChatSessions from '@/components/ChatSessions';
+import ChatInterface from '@/components/ChatInterface';
+import SuggestionsSidebar from '@/components/SuggestionsSidebar';
 
 export default function CodigoTributario() {
   const [session, setSession] = useState<ChatSession | null>(null);
@@ -15,10 +18,10 @@ export default function CodigoTributario() {
       updated_at: new Date(),
     }
   ]);
-  const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showSessions, setShowSessions] = useState(true);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (inputMessage: string) => {
     if (!inputMessage.trim()) return;
 
     const newMessage: ChatMessage = {
@@ -31,7 +34,6 @@ export default function CodigoTributario() {
     };
 
     setMessages(prev => [...prev, newMessage]);
-    setInputMessage('');
     setIsTyping(true);
 
     // Simular resposta do assistente (remover quando integrar com backend)
@@ -54,10 +56,55 @@ export default function CodigoTributario() {
     }, 2000);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleSessionSelect = (selectedSession: ChatSession) => {
+    setSession(selectedSession);
+    // Carregar mensagens da sessão (substituir por API call)
+    setMessages([
+      {
+        id: '1',
+        session_id: selectedSession.id,
+        role: 'assistant',
+        content: `Sessão "${selectedSession.title}" carregada. Como posso ajudá-lo?`,
+        created_at: new Date(),
+        updated_at: new Date(),
+      }
+    ]);
+  };
+
+  const handleNewSession = () => {
+    setSession(null);
+    setMessages([
+      {
+        id: '1',
+        session_id: 'temp',
+        role: 'assistant',
+        content: 'Olá! Sou o assistente do Código Tributário. Posso ajudá-lo com consultas sobre legislação fiscal, impostos, tributos e regulamentações. Como posso ajudá-lo hoje?',
+        created_at: new Date(),
+        updated_at: new Date(),
+      }
+    ]);
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    if (session?.id === sessionId) {
+      handleNewSession();
+    }
+  };
+
+  const handleClearChat = () => {
+    if (session) {
+      setMessages([
+        {
+          id: '1',
+          session_id: session.id,
+          role: 'assistant',
+          content: `Sessão "${session.title}" limpa. Como posso ajudá-lo?`,
+          created_at: new Date(),
+          updated_at: new Date(),
+        }
+      ]);
+    } else {
+      handleNewSession();
     }
   };
 
@@ -69,167 +116,65 @@ export default function CodigoTributario() {
           <a href="/" className="btn btn-ghost text-xl">
             ← ACFI
           </a>
+          <button 
+            className="btn btn-ghost btn-sm ml-2"
+            onClick={() => setShowSessions(!showSessions)}
+            title={showSessions ? 'Ocultar sessões' : 'Mostrar sessões'}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
         <div className="navbar-center">
-          <h1 className="text-xl font-bold text-primary">Código Tributário</h1>
+          <h1 className="text-xl font-bold text-primary">
+            {session ? session.title : 'Código Tributário'}
+          </h1>
         </div>
         <div className="navbar-end">
-          <button className="btn btn-primary btn-sm rounded-full">
-            Limpar Chat
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="badge badge-sm badge-outline">
+              RAG System
+            </div>
+            <button 
+              className="btn btn-primary btn-sm rounded-full"
+              onClick={handleClearChat}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Limpar
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-6xl p-4 h-[calc(100vh-80px)] flex gap-4">
-        {/* Sidebar com sugestões */}
-        <div className="w-80 bg-base-100 rounded-2xl p-6 shadow-xl">
-          <h2 className="text-lg font-semibold mb-4 text-base-content">Sugestões de Consulta</h2>
-          
-          <div className="space-y-3">
-            <button className="w-full text-left p-3 bg-primary/5 hover:bg-primary/10 rounded-xl transition-colors">
-              <div className="font-medium text-sm">ICMS</div>
-              <div className="text-xs text-base-content/70">Como calcular ICMS sobre vendas interestaduais?</div>
-            </button>
-            
-            <button className="w-full text-left p-3 bg-success/5 hover:bg-success/10 rounded-xl transition-colors">
-              <div className="font-medium text-sm">IPI</div>
-              <div className="text-xs text-base-content/70">Quais produtos são isentos de IPI?</div>
-            </button>
-            
-            <button className="w-full text-left p-3 bg-accent/5 hover:bg-accent/10 rounded-xl transition-colors">
-              <div className="font-medium text-sm">Simples Nacional</div>
-              <div className="text-xs text-base-content/70">Limites de faturamento para 2024</div>
-            </button>
-            
-            <button className="w-full text-left p-3 bg-info/5 hover:bg-info/10 rounded-xl transition-colors">
-              <div className="font-medium text-sm">IRPF</div>
-              <div className="text-xs text-base-content/70">Deduções permitidas na declaração</div>
-            </button>
-          </div>
+      <div className="container mx-auto max-w-7xl p-4 h-[calc(100vh-80px)] flex gap-4">
+        {/* Sessions Sidebar */}
+        {showSessions && (
+          <ChatSessions
+            currentSession={session}
+            onSessionSelect={handleSessionSelect}
+            onNewSession={handleNewSession}
+            onDeleteSession={handleDeleteSession}
+          />
+        )}
 
-          <div className="mt-8">
-            <h3 className="text-md font-semibold mb-3 text-base-content">Recursos</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Citações legais precisas
-              </div>
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Base legal atualizada
-              </div>
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Respostas contextualizadas
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Main Content */}
+        <div className="flex-1 flex gap-4">
+          {/* Suggestions Sidebar - only show when no session is active */}
+          {!session && (
+            <SuggestionsSidebar onSuggestionClick={handleSendMessage} />
+          )}
 
-        {/* Chat Area */}
-        <div className="flex-1 bg-base-100 rounded-2xl shadow-xl flex flex-col">
-          {/* Messages */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`chat ${message.role === 'user' ? 'chat-end' : 'chat-start'}`}
-                >
-                  <div className="chat-image avatar">
-                    <div className="w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      {message.role === 'user' ? (
-                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <div className="chat-header">
-                    {message.role === 'user' ? 'Você' : 'Assistente ACFI'}
-                    <time className="text-xs opacity-50 ml-2">
-                      {message.created_at.toLocaleTimeString()}
-                    </time>
-                  </div>
-                  <div className={`chat-bubble ${message.role === 'user' ? 'chat-bubble-primary' : 'chat-bubble-accent'} rounded-2xl`}>
-                    {message.content}
-                  </div>
-                  {message.metadata?.sources && (
-                    <div className="chat-footer">
-                      <div className="mt-2 text-xs opacity-70">
-                        <span className="font-medium">Fontes: </span>
-                        {message.metadata.sources.join(', ')}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {/* Typing indicator */}
-              {isTyping && (
-                <div className="chat chat-start">
-                  <div className="chat-image avatar">
-                    <div className="w-10 rounded-full bg-accent/10 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="chat-bubble chat-bubble-accent rounded-2xl">
-                    <span className="loading loading-dots loading-sm"></span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Input Area */}
-          <div className="p-6 border-t border-base-300">
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <textarea
-                  className="textarea textarea-bordered w-full rounded-2xl resize-none"
-                  placeholder="Digite sua consulta sobre código tributário..."
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  rows={2}
-                />
-              </div>
-              <button
-                className="btn btn-primary rounded-full px-6"
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isTyping}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-4 mt-3 text-xs text-base-content/70">
-              <div className="flex items-center gap-1">
-                <kbd className="kbd kbd-xs">Enter</kbd>
-                <span>enviar</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <kbd className="kbd kbd-xs">Shift</kbd>
-                <span>+</span>
-                <kbd className="kbd kbd-xs">Enter</kbd>
-                <span>nova linha</span>
-              </div>
-            </div>
-          </div>
+          {/* Chat Interface */}
+          <ChatInterface
+            session={session}
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            isTyping={isTyping}
+            onClearChat={handleClearChat}
+          />
         </div>
       </div>
     </div>
