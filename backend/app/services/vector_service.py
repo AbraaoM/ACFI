@@ -1,10 +1,14 @@
 import chromadb
 from chromadb.config import Settings
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Dict, Any
 import os
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente
+load_dotenv()
 
 class VectorService:
     def __init__(self):
@@ -12,7 +16,7 @@ class VectorService:
         self.persist_directory = "./data/chroma_db"
         os.makedirs(self.persist_directory, exist_ok=True)
         
-        # Embeddings usando modelo local (gratuito)
+        # Embeddings usando HuggingFace (gratuito e local)
         self.embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
@@ -95,4 +99,15 @@ class VectorService:
         return {
             "count": collection.count(),
             "name": collection.name
+        }
+    
+    def rag_query(self, query: str, k: int = 5) -> Dict[str, Any]:
+        """Executa busca RAG completa: busca + contexto organizado"""
+        chunks = self.similarity_search(query, k)
+        
+        return {
+            "query": query,
+            "chunks_found": len(chunks),
+            "context_chunks": chunks,
+            "context_summary": f"Encontrados {len(chunks)} trechos relevantes de {len(set(chunk['metadata'].get('filename', 'Unknown') for chunk in chunks))} documentos"
         }
