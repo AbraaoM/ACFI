@@ -10,60 +10,50 @@ from ..models.chat_model import MessageRole
 router = APIRouter(prefix="/chats", tags=["chats"])
 rag_service = RAGService()
 
-# CREATE
+# CREATE CHAT - Principal endpoint para chat (sempre com RAG)
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
 def create_chat(
-    session_id: str, 
-    role: MessageRole, 
-    content: str, 
-    db: DBSession = Depends(get_db)
-):
-    return ChatService.create_chat(db, session_id, role, content)
-
-# RAG QUERY - Endpoint principal para chat com RAG
-@router.post("/rag", response_model=dict)
-def ask_rag_question(
     session_id: str,
     question: str,
     k: Optional[int] = 5,
     db: DBSession = Depends(get_db)
 ):
-    """Faz uma pergunta usando RAG com citações completas"""
+    """
+    API Route principal para o Chat com Agente
     
-    # Salva a pergunta do usuário
+    - Recebe pergunta e session_id
+    - Retorna resposta do agente junto com trechos citados
+    - Salva histórico da conversa
+    """
+    
+    # Salva a pergunta do usuário no histórico
     ChatService.create_chat(db, session_id, MessageRole.USER, question)
     
     # Processa com RAG e citações
     rag_result = rag_service.ask_question_with_citations(question, k)
     
-    # Salva a resposta do assistente
+    # Salva a resposta do assistente no histórico
     ChatService.create_chat(db, session_id, MessageRole.ASSISTANT, rag_result["answer"])
     
-    return rag_result
-
-# CHAT SIMPLES - Sem RAG
-@router.post("/simple", response_model=dict)
-def simple_chat(
-    session_id: str,
-    message: str,
-    db: DBSession = Depends(get_db)
-):
-    """Chat simples sem busca em documentos"""
-    
-    # Salva a pergunta do usuário
-    ChatService.create_chat(db, session_id, MessageRole.USER, message)
-    
-    # Resposta simples
-    answer = rag_service.simple_chat(message)
-    
-    # Salva a resposta do assistente
-    ChatService.create_chat(db, session_id, MessageRole.ASSISTANT, answer)
-    
+    # Retorna resposta completa com trechos citados
     return {
-        "question": message,
-        "answer": answer,
-        "session_id": session_id,
-        "type": "simple_chat"
+        "question": rag_result["question"],
+        "answer": rag_result["answer"],
+        "cited_excerpts": rag_result["cited_excerpts"],
+        "sources": [
+            {
+                "citation": f"[{source['number']}]",
+                "filename": source["filename"],
+                "chunk_section": f"Seção {source['chunk_index'] + 1}",
+                "relevance": round(source["relevance_score"], 3)
+            }
+            for source in rag_result["sources"]
+        ],
+        "metadata": {
+            "session_id": session_id,
+            "chunks_analyzed": rag_result["chunks_used"],
+            "context_summary": rag_result["context_summary"]
+        }
     }
 
 # READ ALL BY SESSION
