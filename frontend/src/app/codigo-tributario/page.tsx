@@ -1,182 +1,156 @@
-"use client";
+'use client'
 
-import { useState } from 'react';
-import { ChatMessage, ChatSession } from '@/models';
-import ChatSessions from '@/components/ChatSessions';
-import ChatInterface from '@/components/ChatInterface';
-import SuggestionsSidebar from '@/components/SuggestionsSidebar';
+import { useState } from 'react'
 
-export default function CodigoTributario() {
-  const [session, setSession] = useState<ChatSession | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      session_id: 'temp',
-      role: 'assistant',
-      content: 'Olá! Sou o assistente do Código Tributário. Posso ajudá-lo com consultas sobre legislação fiscal, impostos, tributos e regulamentações. Como posso ajudá-lo hoje?',
-      created_at: new Date(),
-      updated_at: new Date(),
-    }
-  ]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [showSessions, setShowSessions] = useState(true);
+interface ChatSession {
+  id: string
+  title: string
+  lastMessage: string
+  timestamp: string
+}
 
-  const handleSendMessage = (inputMessage: string) => {
-    if (!inputMessage.trim()) return;
+interface Message {
+  id: string
+  content: string
+  isUser: boolean
+  timestamp: string
+}
 
-    const newMessage: ChatMessage = {
+export default function CodigoTributarioPage() {
+  const [sessions] = useState<ChatSession[]>([
+    { id: '1', title: 'Consulta ICMS', lastMessage: 'Como calcular ICMS?', timestamp: '10:30' },
+    { id: '2', title: 'ISS Municipal', lastMessage: 'Alíquota do ISS...', timestamp: '09:15' },
+    { id: '3', title: 'PIS/COFINS', lastMessage: 'Regime de apuração', timestamp: 'Ontem' }
+  ])
+  
+  const [activeSession, setActiveSession] = useState<string>('1')
+  const [messages, setMessages] = useState<Message[]>([
+    { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: '10:30' },
+    { id: '2', content: 'Como calcular ICMS?', isUser: true, timestamp: '10:31' },
+    { id: '3', content: 'O ICMS é calculado sobre o valor da operação...', isUser: false, timestamp: '10:32' }
+  ])
+  
+  const [newMessage, setNewMessage] = useState('')
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return
+    
+    const userMessage: Message = {
       id: Date.now().toString(),
-      session_id: session?.id || 'temp',
-      role: 'user',
-      content: inputMessage,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setIsTyping(true);
-
-    // Simular resposta do assistente (remover quando integrar com backend)
+      content: newMessage,
+      isUser: true,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    }
+    
+    setMessages(prev => [...prev, userMessage])
+    setNewMessage('')
+    
+    // Simular resposta do sistema
     setTimeout(() => {
-      const assistantMessage: ChatMessage = {
+      const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        session_id: session?.id || 'temp',
-        role: 'assistant',
-        content: 'Esta é uma resposta simulada. Quando integrado com o backend, aqui aparecerá a resposta real do sistema RAG com base no código tributário.',
-        metadata: {
-          sources: ['Lei 5.172/1966 - CTN', 'Decreto 70.235/1972'],
-          confidence: 0.95,
-          processing_time: 1.2,
-        },
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsTyping(false);
-    }, 2000);
-  };
-
-  const handleSessionSelect = (selectedSession: ChatSession) => {
-    setSession(selectedSession);
-    // Carregar mensagens da sessão (substituir por API call)
-    setMessages([
-      {
-        id: '1',
-        session_id: selectedSession.id,
-        role: 'assistant',
-        content: `Sessão "${selectedSession.title}" carregada. Como posso ajudá-lo?`,
-        created_at: new Date(),
-        updated_at: new Date(),
+        content: 'Esta é uma resposta simulada do sistema.',
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       }
-    ]);
-  };
+      setMessages(prev => [...prev, botMessage])
+    }, 1000)
+  }
 
-  const handleNewSession = () => {
-    setSession(null);
+  const handleNewChat = () => {
+    const newSessionId = Date.now().toString()
+    setActiveSession(newSessionId)
     setMessages([
-      {
-        id: '1',
-        session_id: 'temp',
-        role: 'assistant',
-        content: 'Olá! Sou o assistente do Código Tributário. Posso ajudá-lo com consultas sobre legislação fiscal, impostos, tributos e regulamentações. Como posso ajudá-lo hoje?',
-        created_at: new Date(),
-        updated_at: new Date(),
-      }
-    ]);
-  };
-
-  const handleDeleteSession = (sessionId: string) => {
-    if (session?.id === sessionId) {
-      handleNewSession();
-    }
-  };
-
-  const handleClearChat = () => {
-    if (session) {
-      setMessages([
-        {
-          id: '1',
-          session_id: session.id,
-          role: 'assistant',
-          content: `Sessão "${session.title}" limpa. Como posso ajudá-lo?`,
-          created_at: new Date(),
-          updated_at: new Date(),
-        }
-      ]);
-    } else {
-      handleNewSession();
-    }
-  };
+      { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }
+    ])
+  }
 
   return (
-    <div className="min-h-screen bg-base-200">
-      {/* Header */}
-      <div className="navbar bg-base-100 shadow-lg">
-        <div className="navbar-start">
-          <a href="/" className="btn btn-ghost text-xl">
-            ← ACFI
-          </a>
+    <div className="flex h-screen bg-base-100">
+      {/* Sidebar - Gerenciador de Sessões */}
+      <div className="w-80 bg-base-200 border-r border-base-300 flex flex-col">
+        <div className="p-4 border-b border-base-300">
           <button 
-            className="btn btn-ghost btn-sm ml-2"
-            onClick={() => setShowSessions(!showSessions)}
-            title={showSessions ? 'Ocultar sessões' : 'Mostrar sessões'}
+            onClick={handleNewChat}
+            className="btn btn-primary btn-block"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            + Nova Conversa
           </button>
         </div>
-        <div className="navbar-center">
-          <h1 className="text-xl font-bold text-primary">
-            {session ? session.title : 'Código Tributário'}
-          </h1>
-        </div>
-        <div className="navbar-end">
-          <div className="flex items-center gap-2">
-            <div className="badge badge-sm badge-outline">
-              RAG System
-            </div>
-            <button 
-              className="btn btn-primary btn-sm rounded-full"
-              onClick={handleClearChat}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Limpar
-            </button>
+        
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-2">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className={`card bg-base-100 shadow-sm mb-2 cursor-pointer hover:bg-base-200 transition-colors ${
+                  activeSession === session.id ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setActiveSession(session.id)}
+              >
+                <div className="card-body p-3">
+                  <h3 className="card-title text-sm">{session.title}</h3>
+                  <p className="text-xs text-base-content/70 truncate">{session.lastMessage}</p>
+                  <div className="text-xs text-base-content/50 text-right">{session.timestamp}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-7xl p-4 h-[calc(100vh-80px)] flex gap-4">
-        {/* Sessions Sidebar */}
-        {showSessions && (
-          <ChatSessions
-            currentSession={session}
-            onSessionSelect={handleSessionSelect}
-            onNewSession={handleNewSession}
-            onDeleteSession={handleDeleteSession}
-          />
-        )}
+      {/* Área do Chat */}
+      <div className="flex-1 flex flex-col">
+        {/* Header do Chat */}
+        <div className="bg-base-200 p-4 border-b border-base-300">
+          <h1 className="text-xl font-bold">Código Tributário - Chat</h1>
+          <p className="text-sm text-base-content/70">Assistente para questões tributárias</p>
+        </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex gap-4">
-          {/* Suggestions Sidebar - only show when no session is active */}
-          {!session && (
-            <SuggestionsSidebar onSuggestionClick={handleSendMessage} />
-          )}
+        {/* Mensagens */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`chat ${message.isUser ? 'chat-end' : 'chat-start'}`}
+            >
+              <div className="chat-image avatar">
+                <div className="w-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center">
+                  {message.isUser ? 'U' : 'AI'}
+                </div>
+              </div>
+              <div className="chat-header">
+                {message.isUser ? 'Você' : 'Assistente'}
+                <time className="text-xs opacity-50 ml-1">{message.timestamp}</time>
+              </div>
+              <div className={`chat-bubble ${message.isUser ? 'chat-bubble-primary' : 'chat-bubble-secondary'}`}>
+                {message.content}
+              </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Chat Interface */}
-          <ChatInterface
-            session={session}
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isTyping={isTyping}
-            onClearChat={handleClearChat}
-          />
+        {/* Input de Mensagem */}
+        <div className="bg-base-200 p-4 border-t border-base-300">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Digite sua pergunta sobre tributação..."
+              className="input input-bordered flex-1"
+            />
+            <button
+              onClick={handleSendMessage}
+              className="btn btn-primary"
+              disabled={!newMessage.trim()}
+            >
+              Enviar
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
