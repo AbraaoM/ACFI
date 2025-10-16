@@ -9,115 +9,110 @@ import {
   PaginatedResponse,
 } from '@/models';
 
-export class DocumentService {
-  private static baseUrl = '/api/documents';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  // GET /api/documents?page={page}&per_page={per_page}&processed={processed}
-  static async getDocuments(
-    page: number = 1,
-    perPage: number = 20,
-    processed?: boolean
-  ): Promise<PaginatedResponse<Document>> {
-    let url = `${this.baseUrl}?page=${page}&per_page=${perPage}`;
-    if (processed !== undefined) {
-      url += `&processed=${processed}`;
+export interface SearchDocumentsRequest {
+  query: string;
+  limit?: number;
+  offset?: number;
+  type?: string;
+}
+
+export interface PaginatedDocumentResponse {
+  data: DocumentResponse[];
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+// Converter response do backend para o formato do frontend
+function convertDocument(document: DocumentResponse) {
+  return {
+    id: document.id,
+    title: document.title,
+    content: document.content,
+    type: document.type,
+    source: document.source,
+    created_at: new Date(document.created_at),
+    updated_at: new Date(document.updated_at),
+  };
+}
+
+export const DocumentService = {
+  async searchDocuments(query: string, limit = 10, offset = 0, type?: string) {
+    let url = `${API_BASE_URL}/api/documents/search?query=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`;
+    if (type) {
+      url += `&type=${type}`;
     }
 
-    const response = await apiRequest<PaginatedResponse<DocumentResponse>>(url);
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar documentos: ${response.status}`);
+    }
+
+    const data: PaginatedDocumentResponse = await response.json();
 
     return {
-      ...response,
-      data: response.data.map(convertDocumentResponse),
+      ...data,
+      data: data.data.map(convertDocument),
     };
-  }
+  },
 
-  // POST /api/documents
-  static async createDocument(document: CreateDocumentRequest): Promise<Document> {
-    const response = await apiRequest<ApiResponse<DocumentResponse>>(
-      this.baseUrl,
-      {
-        method: 'POST',
-        body: JSON.stringify(document),
-      }
-    );
+  async getDocument(documentId: string) {
+    const response = await fetch(`${API_BASE_URL}/api/documents/${documentId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    return convertDocumentResponse(response.data);
-  }
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar documento: ${response.status}`);
+    }
 
-  // GET /api/documents/{document_id}
-  static async getDocument(documentId: string): Promise<Document> {
-    const response = await apiRequest<ApiResponse<DocumentResponse>>(
-      `${this.baseUrl}/${documentId}`
-    );
+    const data: { data: DocumentResponse } = await response.json();
+    return convertDocument(data.data);
+  },
 
-    return convertDocumentResponse(response.data);
-  }
-
-  // PUT /api/documents/{document_id}
-  static async updateDocument(
-    documentId: string,
-    updates: UpdateDocumentRequest
-  ): Promise<Document> {
-    const response = await apiRequest<ApiResponse<DocumentResponse>>(
-      `${this.baseUrl}/${documentId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      }
-    );
-
-    return convertDocumentResponse(response.data);
-  }
-
-  // DELETE /api/documents/{document_id}
-  static async deleteDocument(documentId: string): Promise<void> {
-    await apiRequest<ApiResponse<null>>(
-      `${this.baseUrl}/${documentId}`,
-      {
-        method: 'DELETE',
-      }
-    );
-  }
-
-  // POST /api/documents/upload - Upload de arquivo
-  static async uploadDocument(file: File): Promise<Document> {
+  async uploadDocument(file: File, metadata?: { type?: string; source?: string }) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await apiRequest<ApiResponse<DocumentResponse>>(
-      `${this.baseUrl}/upload`,
-      {
-        method: 'POST',
-        body: formData,
-        headers: {}, // Remove Content-Type para FormData
-      }
-    );
+    if (metadata?.type) {
+      formData.append('type', metadata.type);
+    }
+    if (metadata?.source) {
+      formData.append('source', metadata.source);
+    }
 
-    return convertDocumentResponse(response.data);
-  }
+    const response = await fetch(`${API_BASE_URL}/api/documents`, {
+      method: 'POST',
+      body: formData,
+    });
 
-  // POST /api/documents/{document_id}/process - Processar documento
-  static async processDocument(documentId: string): Promise<Document> {
-    const response = await apiRequest<ApiResponse<DocumentResponse>>(
-      `${this.baseUrl}/${documentId}/process`,
-      {
-        method: 'POST',
-      }
-    );
+    if (!response.ok) {
+      throw new Error(`Erro ao fazer upload do documento: ${response.status}`);
+    }
 
-    return convertDocumentResponse(response.data);
-  }
+    const data: { data: DocumentResponse } = await response.json();
+    return convertDocument(data.data);
+  },
 
-  // GET /api/documents/{document_id}/status - Status do processamento
-  static async getDocumentStatus(documentId: string): Promise<{
-    status: string;
-    progress: number;
-    error?: string;
-  }> {
-    return await apiRequest<{
-      status: string;
-      progress: number;
-      error?: string;
-    }>(`${this.baseUrl}/${documentId}/status`);
-  }
-}
+  async deleteDocument(documentId: string) {
+    const response = await fetch(`${API_BASE_URL}/api/documents/${documentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao deletar documento: ${response.status}`);
+    }
+  },
+};

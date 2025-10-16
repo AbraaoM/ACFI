@@ -1,97 +1,125 @@
-import { apiRequest } from './api';
-import {
-  ChatSession,
-  SessionResponse,
-  CreateSessionRequest,
-  UpdateSessionRequest,
-  convertSessionResponse,
-  ApiResponse,
-  PaginatedResponse,
-} from '@/models';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export class SessionService {
-  private static baseUrl = '/api/sessions';
+export interface SessionResponse {
+  id: string;
+  title: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
 
-  // GET /api/sessions?page={page}&per_page={per_page}&user_id={user_id}
-  static async getSessions(
-    page: number = 1,
-    perPage: number = 20,
-    userId?: string
-  ): Promise<PaginatedResponse<ChatSession>> {
-    let url = `${this.baseUrl}?page=${page}&per_page=${perPage}`;
+export interface CreateSessionRequest {
+  title: string;
+  user_id: string;
+}
+
+export interface UpdateSessionRequest {
+  title?: string;
+}
+
+export interface PaginatedSessionResponse {
+  data: SessionResponse[];
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+// Converter response do backend para o formato do frontend
+function convertSession(session: SessionResponse) {
+  return {
+    id: session.id,
+    title: session.title,
+    user_id: session.user_id,
+    created_at: new Date(session.created_at),
+    updated_at: new Date(session.updated_at),
+  };
+}
+
+export const SessionService = {
+  async getSessions(page = 1, perPage = 20, userId?: string) {
+    let url = `${API_BASE_URL}/api/sessions?page=${page}&per_page=${perPage}`;
     if (userId) {
       url += `&user_id=${userId}`;
     }
 
-    const response = await apiRequest<PaginatedResponse<SessionResponse>>(url);
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar sessões: ${response.status}`);
+    }
+
+    const data: PaginatedSessionResponse = await response.json();
+    
     return {
-      ...response,
-      data: response.data.map(convertSessionResponse),
+      ...data,
+      data: data.data.map(convertSession),
     };
-  }
+  },
 
-  // POST /api/sessions
-  static async createSession(session: CreateSessionRequest): Promise<ChatSession> {
-    const response = await apiRequest<ApiResponse<SessionResponse>>(
-      this.baseUrl,
-      {
-        method: 'POST',
-        body: JSON.stringify(session),
-      }
-    );
+  async createSession(session: CreateSessionRequest) {
+    const response = await fetch(`${API_BASE_URL}/api/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(session),
+    });
 
-    return convertSessionResponse(response.data);
-  }
+    if (!response.ok) {
+      throw new Error(`Erro ao criar sessão: ${response.status}`);
+    }
 
-  // GET /api/sessions/{session_id}
-  static async getSession(sessionId: string): Promise<ChatSession> {
-    const response = await apiRequest<ApiResponse<SessionResponse>>(
-      `${this.baseUrl}/${sessionId}`
-    );
+    const data: { data: SessionResponse } = await response.json();
+    return convertSession(data.data);
+  },
 
-    return convertSessionResponse(response.data);
-  }
+  async getSession(sessionId: string) {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  // PUT /api/sessions/{session_id}
-  static async updateSession(
-    sessionId: string,
-    updates: UpdateSessionRequest
-  ): Promise<ChatSession> {
-    const response = await apiRequest<ApiResponse<SessionResponse>>(
-      `${this.baseUrl}/${sessionId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      }
-    );
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar sessão: ${response.status}`);
+    }
 
-    return convertSessionResponse(response.data);
-  }
+    const data: { data: SessionResponse } = await response.json();
+    return convertSession(data.data);
+  },
 
-  // DELETE /api/sessions/{session_id}
-  static async deleteSession(sessionId: string): Promise<void> {
-    await apiRequest<ApiResponse<null>>(
-      `${this.baseUrl}/${sessionId}`,
-      {
-        method: 'DELETE',
-      }
-    );
-  }
+  async updateSession(sessionId: string, updates: UpdateSessionRequest) {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
 
-  // GET /api/sessions/{session_id}/messages
-  static async getSessionMessages(
-    sessionId: string,
-    page: number = 1,
-    perPage: number = 50
-  ): Promise<PaginatedResponse<ChatSession>> {
-    const response = await apiRequest<PaginatedResponse<SessionResponse>>(
-      `${this.baseUrl}/${sessionId}/messages?page=${page}&per_page=${perPage}`
-    );
+    if (!response.ok) {
+      throw new Error(`Erro ao atualizar sessão: ${response.status}`);
+    }
 
-    return {
-      ...response,
-      data: response.data.map(convertSessionResponse),
-    };
-  }
-}
+    const data: { data: SessionResponse } = await response.json();
+    return convertSession(data.data);
+  },
+
+  async deleteSession(sessionId: string) {
+    const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro ao deletar sessão: ${response.status}`);
+    }
+  },
+};
