@@ -1,13 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-
-interface ChatSession {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: string
-}
+import { Session } from '@/models/session'
+import { SessionService } from '@/services/sessionService'
+import SessionList from '@/components/SessionList'
+import { useState, useEffect } from 'react'
 
 interface Message {
   id: string
@@ -17,23 +13,60 @@ interface Message {
 }
 
 export default function CodigoTributarioPage() {
-  const [sessions] = useState<ChatSession[]>([
-    { id: '1', title: 'Consulta ICMS', lastMessage: 'Como calcular ICMS?', timestamp: '10:30' },
-    { id: '2', title: 'ISS Municipal', lastMessage: 'Alíquota do ISS...', timestamp: '09:15' },
-    { id: '3', title: 'PIS/COFINS', lastMessage: 'Regime de apuração', timestamp: 'Ontem' }
-  ])
-  
-  const [activeSession, setActiveSession] = useState<string>('1')
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: '10:30' },
-    { id: '2', content: 'Como calcular ICMS?', isUser: true, timestamp: '10:31' },
-    { id: '3', content: 'O ICMS é calculado sobre o valor da operação...', isUser: false, timestamp: '10:32' }
-  ])
-  
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [activeSession, setActiveSession] = useState<string>('')
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return
+  const sessionService = SessionService()
+
+  // Carregar sessões na inicialização
+  useEffect(() => {
+    loadSessions()
+  }, [])
+
+  const loadSessions = async () => {
+    try {
+      setLoading(true)
+      const sessionsData = await sessionService.getSessions()
+      setSessions(sessionsData)
+      
+      // Se há sessões, seleciona a primeira
+      if (sessionsData.length > 0) {
+        setActiveSession(sessionsData[0].id)
+        loadSessionMessages(sessionsData[0].id)
+      } else {
+        // Se não há sessões, cria uma nova
+        await handleNewChat()
+      }
+    } catch (error) {
+      console.error('Erro ao carregar sessões:', error)
+      // Fallback com dados mockados
+      const mockSessions: Session[] = [
+        { id: '1', name: 'Consulta ICMS', description: 'Como calcular ICMS?', createdAt: new Date(), updatedAt: new Date() }
+      ]
+      setSessions(mockSessions)
+      setActiveSession('1')
+      setMessages([
+        { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: '10:30' }
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadSessionMessages = (sessionId: string) => {
+    // Por enquanto, carrega mensagens mockadas
+    // No futuro, você pode criar um MessageService para buscar mensagens reais
+    const mockMessages: Message[] = [
+      { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }
+    ]
+    setMessages(mockMessages)
+  }
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !activeSession) return
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -57,54 +90,80 @@ export default function CodigoTributarioPage() {
     }, 1000)
   }
 
-  const handleNewChat = () => {
-    const newSessionId = Date.now().toString()
-    setActiveSession(newSessionId)
-    setMessages([
-      { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }
-    ])
+  const handleNewChat = async () => {
+    try {
+      const newSession = await sessionService.createSession(
+        'Nova Conversa',
+        'Conversa iniciada'
+      )
+      
+      // Atualiza a lista de sessões
+      setSessions(prev => [newSession, ...prev])
+      setActiveSession(newSession.id)
+      
+      // Inicia com mensagem de boas-vindas
+      setMessages([
+        { 
+          id: '1', 
+          content: 'Olá! Como posso ajudar com questões tributárias?', 
+          isUser: false, 
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+        }
+      ])
+    } catch (error) {
+      console.error('Erro ao criar nova sessão:', error)
+      // Fallback com dados mockados
+      const newSessionId = Date.now().toString()
+      const mockSession: Session = {
+        id: newSessionId,
+        name: 'Nova Conversa',
+        description: 'Conversa iniciada',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      setSessions(prev => [mockSession, ...prev])
+      setActiveSession(newSessionId)
+      setMessages([
+        { 
+          id: '1', 
+          content: 'Olá! Como posso ajudar com questões tributárias?', 
+          isUser: false, 
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+        }
+      ])
+    }
+  }
+
+  const handleSessionSelect = (sessionId: string) => {
+    setActiveSession(sessionId)
+    loadSessionMessages(sessionId)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-base-100 items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    )
   }
 
   return (
     <div className="flex h-screen bg-base-100">
-      {/* Sidebar - Gerenciador de Sessões */}
-      <div className="w-80 bg-base-200 border-r border-base-300 flex flex-col">
-        <div className="p-4 border-b border-base-300">
-          <button 
-            onClick={handleNewChat}
-            className="btn btn-primary btn-block"
-          >
-            + Nova Conversa
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-2">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className={`card bg-base-100 shadow-sm mb-2 cursor-pointer hover:bg-base-200 transition-colors ${
-                  activeSession === session.id ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => setActiveSession(session.id)}
-              >
-                <div className="card-body p-3">
-                  <h3 className="card-title text-sm">{session.title}</h3>
-                  <p className="text-xs text-base-content/70 truncate">{session.lastMessage}</p>
-                  <div className="text-xs text-base-content/50 text-right">{session.timestamp}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <SessionList
+        sessions={sessions}
+        activeSessionId={activeSession}
+        onSessionSelect={handleSessionSelect}
+        onNewSession={handleNewChat}
+      />
 
       {/* Área do Chat */}
       <div className="flex-1 flex flex-col">
         {/* Header do Chat */}
         <div className="bg-base-200 p-4 border-b border-base-300">
           <h1 className="text-xl font-bold">Código Tributário - Chat</h1>
-          <p className="text-sm text-base-content/70">Assistente para questões tributárias</p>
+          <p className="text-sm text-base-content/70">
+            {sessions.find(s => s.id === activeSession)?.name || 'Assistente para questões tributárias'}
+          </p>
         </div>
 
         {/* Mensagens */}
@@ -140,11 +199,12 @@ export default function CodigoTributarioPage() {
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               placeholder="Digite sua pergunta sobre tributação..."
               className="input input-bordered flex-1"
+              disabled={!activeSession}
             />
             <button
               onClick={handleSendMessage}
               className="btn btn-primary"
-              disabled={!newMessage.trim()}
+              disabled={!newMessage.trim() || !activeSession}
             >
               Enviar
             </button>

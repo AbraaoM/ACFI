@@ -1,21 +1,24 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+import { Session } from "@/models/session";
+
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export function SessionService() {
-  const createSession = async (name: string) => {
+  const createSession = async (name: string, description: string) => {
     const response = await fetch(`${API_BASE_URL}/sessions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, description }),
     });
     return response.json();
   };
 
-  const getSessions = async () => {
+  const getSessions = async (): Promise<Session[]> => {
     const response = await fetch(`${API_BASE_URL}/sessions`);
     return response.json();
   };
 
-  const getSession = async (sessionId: string) => {
+  const getSession = async (sessionId: string): Promise<Session> => {
     const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`);
     return response.json();
   };
