@@ -4,24 +4,19 @@ interface SessionListProps {
   sessions: Session[]
   activeSessionId: string
   onSessionSelect: (sessionId: string) => void
-  onNewSession: () => void
+  children?: React.ReactNode
 }
 
 export default function SessionList({ 
   sessions, 
   activeSessionId, 
-  onSessionSelect, 
-  onNewSession 
+  onSessionSelect,
+  children
 }: SessionListProps) {
   return (
     <div className="w-80 bg-base-200 border-r border-base-300 flex flex-col">
       <div className="p-4 border-b border-base-300">
-        <button 
-          onClick={onNewSession}
-          className="btn btn-primary btn-block"
-        >
-          + Nova Conversa
-        </button>
+        {children}
       </div>
       
       <div className="flex-1 overflow-y-auto">

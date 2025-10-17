@@ -3,6 +3,7 @@
 import { Session } from '@/models/session'
 import { SessionService } from '@/services/sessionService'
 import SessionList from '@/components/SessionList'
+import NewSessionForm from '@/components/NewSessionForm'
 import { useState, useEffect } from 'react'
 
 interface Message {
@@ -36,9 +37,6 @@ export default function CodigoTributarioPage() {
       if (sessionsData.length > 0) {
         setActiveSession(sessionsData[0].id)
         loadSessionMessages(sessionsData[0].id)
-      } else {
-        // Se não há sessões, cria uma nova
-        await handleNewChat()
       }
     } catch (error) {
       console.error('Erro ao carregar sessões:', error)
@@ -90,10 +88,10 @@ export default function CodigoTributarioPage() {
     }, 1000)
   }
 
-  const handleNewChat = async () => {
+  const handleNewChat = async (sessionName: string) => {
     try {
       const newSession = await sessionService.createSession(
-        'Nova Conversa',
+        sessionName,
         'Conversa iniciada'
       )
       
@@ -116,7 +114,7 @@ export default function CodigoTributarioPage() {
       const newSessionId = Date.now().toString()
       const mockSession: Session = {
         id: newSessionId,
-        name: 'Nova Conversa',
+        name: sessionName,
         description: 'Conversa iniciada',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -153,8 +151,9 @@ export default function CodigoTributarioPage() {
         sessions={sessions}
         activeSessionId={activeSession}
         onSessionSelect={handleSessionSelect}
-        onNewSession={handleNewChat}
-      />
+      >
+        <NewSessionForm onCreateSession={handleNewChat} />
+      </SessionList>
 
       {/* Área do Chat */}
       <div className="flex-1 flex flex-col">
