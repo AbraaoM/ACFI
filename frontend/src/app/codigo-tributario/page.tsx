@@ -4,6 +4,7 @@ import { Session } from '@/models/session'
 import { SessionService } from '@/services/sessionService'
 import SessionList from '@/components/SessionList'
 import NewSessionForm from '@/components/NewSessionForm'
+import ChatArea from '@/components/ChatArea'
 import { useState, useEffect } from 'react'
 
 interface Message {
@@ -17,7 +18,6 @@ export default function CodigoTributarioPage() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [activeSession, setActiveSession] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
-  const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
   const sessionService = SessionService()
@@ -63,18 +63,17 @@ export default function CodigoTributarioPage() {
     setMessages(mockMessages)
   }
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !activeSession) return
+  const handleSendMessage = async (messageContent: string) => {
+    if (!activeSession) return
     
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: newMessage,
+      content: messageContent,
       isUser: true,
       timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     }
     
     setMessages(prev => [...prev, userMessage])
-    setNewMessage('')
     
     // Simular resposta do sistema
     setTimeout(() => {
@@ -142,6 +141,8 @@ export default function CodigoTributarioPage() {
     )
   }
 
+  const activeSessionName = sessions.find(s => s.id === activeSession)?.name || ''
+
   return (
     <div className="flex h-screen bg-base-100">
       <SessionList
@@ -152,61 +153,12 @@ export default function CodigoTributarioPage() {
         <NewSessionForm onCreateSession={handleNewChat} />
       </SessionList>
 
-      {/* Área do Chat */}
-      <div className="flex-1 flex flex-col">
-        {/* Header do Chat */}
-        <div className="bg-base-200 p-4 border-b border-base-300">
-          <h1 className="text-xl font-bold">Código Tributário - Chat</h1>
-          <p className="text-sm text-base-content/70">
-            {sessions.find(s => s.id === activeSession)?.name || 'Assistente para questões tributárias'}
-          </p>
-        </div>
-
-        {/* Mensagens */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`chat ${message.isUser ? 'chat-end' : 'chat-start'}`}
-            >
-              <div className="chat-image avatar">
-                <div className="w-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center">
-                  {message.isUser ? 'U' : 'AI'}
-                </div>
-              </div>
-              <div className="chat-header">
-                {message.isUser ? 'Você' : 'Assistente'}
-                <time className="text-xs opacity-50 ml-1">{message.timestamp}</time>
-              </div>
-              <div className={`chat-bubble ${message.isUser ? 'chat-bubble-primary' : 'chat-bubble-secondary'}`}>
-                {message.content}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Input de Mensagem */}
-        <div className="bg-base-200 p-4 border-t border-base-300">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Digite sua pergunta sobre tributação..."
-              className="input input-bordered flex-1"
-              disabled={!activeSession}
-            />
-            <button
-              onClick={handleSendMessage}
-              className="btn btn-primary"
-              disabled={!newMessage.trim() || !activeSession}
-            >
-              Enviar
-            </button>
-          </div>
-        </div>
-      </div>
+      <ChatArea
+        sessionName={activeSessionName}
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        disabled={!activeSession}
+      />
     </div>
   )
 }
