@@ -5,6 +5,7 @@ import { SessionService } from '@/services/sessionService'
 import SessionList from '@/components/SessionList'
 import NewSessionForm from '@/components/NewSessionForm'
 import ChatArea from '@/components/ChatArea'
+import Menu from '@/components/Menu'
 import { useState, useEffect } from 'react'
 
 export default function CodigoTributarioPage() {
@@ -75,8 +76,11 @@ export default function CodigoTributarioPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-base-100 items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="flex h-screen bg-base-100">
+        <Menu />
+        <div className="flex-1 flex items-center justify-center">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
       </div>
     )
   }
@@ -85,6 +89,8 @@ export default function CodigoTributarioPage() {
 
   return (
     <div className="flex h-screen bg-base-100">
+      <Menu />
+      
       <SessionList
         sessions={sessions}
         activeSessionId={activeSession}
