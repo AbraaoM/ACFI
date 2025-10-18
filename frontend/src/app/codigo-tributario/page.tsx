@@ -90,10 +90,7 @@ export default function CodigoTributarioPage() {
 
   const handleNewChat = async (sessionName: string) => {
     try {
-      const newSession = await sessionService.createSession(
-        sessionName,
-        'Conversa iniciada'
-      )
+      const newSession = await sessionService.createSession({name: sessionName, description: 'Conversa iniciada'} as Session)
       
       // Atualiza a lista de sessões
       setSessions(prev => [newSession, ...prev])

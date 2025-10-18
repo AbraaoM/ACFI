@@ -1,16 +1,21 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session as DBSession
 from typing import List, Optional
+from pydantic import BaseModel
 
 from ..database import get_db
 from ..services.session_services import SessionService
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
+class SessionCreateRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+
 # CREATE
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
-def create_session(name: str, description: Optional[str] = None, db: DBSession = Depends(get_db)):
-    return SessionService.create_session(db, name, description)
+def create_session(request: SessionCreateRequest, db: DBSession = Depends(get_db)):
+    return SessionService.create_session(db, request.name, request.description)
 
 # READ ALL
 @router.get("/", response_model=List[dict])

@@ -4,11 +4,11 @@ import { Session } from "@/models/session";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export function SessionService() {
-  const createSession = async (name: string, description: string) => {
+  const createSession = async (newSession: Session) => {
     const response = await fetch(`${API_BASE_URL}/sessions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description }),
+      body: JSON.stringify(newSession),
     });
     return response.json();
   };
