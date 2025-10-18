@@ -7,17 +7,9 @@ import NewSessionForm from '@/components/NewSessionForm'
 import ChatArea from '@/components/ChatArea'
 import { useState, useEffect } from 'react'
 
-interface Message {
-  id: string
-  content: string
-  isUser: boolean
-  timestamp: string
-}
-
 export default function CodigoTributarioPage() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [activeSession, setActiveSession] = useState<string>('')
-  const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
 
   const sessionService = SessionService()
@@ -36,7 +28,6 @@ export default function CodigoTributarioPage() {
       // Se há sessões, seleciona a primeira
       if (sessionsData.length > 0) {
         setActiveSession(sessionsData[0].id)
-        loadSessionMessages(sessionsData[0].id)
       }
     } catch (error) {
       console.error('Erro ao carregar sessões:', error)
@@ -46,64 +37,22 @@ export default function CodigoTributarioPage() {
       ]
       setSessions(mockSessions)
       setActiveSession('1')
-      setMessages([
-        { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: '10:30' }
-      ])
     } finally {
       setLoading(false)
     }
   }
 
-  const loadSessionMessages = (sessionId: string) => {
-    // Por enquanto, carrega mensagens mockadas
-    // No futuro, você pode criar um MessageService para buscar mensagens reais
-    const mockMessages: Message[] = [
-      { id: '1', content: 'Olá! Como posso ajudar com questões tributárias?', isUser: false, timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }
-    ]
-    setMessages(mockMessages)
-  }
-
-  const handleSendMessage = async (messageContent: string) => {
-    if (!activeSession) return
-    
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: messageContent,
-      isUser: true,
-      timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    }
-    
-    setMessages(prev => [...prev, userMessage])
-    
-    // Simular resposta do sistema
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: 'Esta é uma resposta simulada do sistema.',
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-      }
-      setMessages(prev => [...prev, botMessage])
-    }, 1000)
-  }
-
   const handleNewChat = async (sessionName: string) => {
     try {
-      const newSession = await sessionService.createSession({name: sessionName, description: 'Conversa iniciada'} as Session)
+      const newSession = await sessionService.createSession({
+        name: sessionName, 
+        description: 'Conversa iniciada'
+      } as Session)
       
       // Atualiza a lista de sessões
       setSessions(prev => [newSession, ...prev])
       setActiveSession(newSession.id)
       
-      // Inicia com mensagem de boas-vindas
-      setMessages([
-        { 
-          id: '1', 
-          content: 'Olá! Como posso ajudar com questões tributárias?', 
-          isUser: false, 
-          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
-        }
-      ])
     } catch (error) {
       console.error('Erro ao criar nova sessão:', error)
       // Fallback com dados mockados
@@ -117,20 +66,11 @@ export default function CodigoTributarioPage() {
       }
       setSessions(prev => [mockSession, ...prev])
       setActiveSession(newSessionId)
-      setMessages([
-        { 
-          id: '1', 
-          content: 'Olá! Como posso ajudar com questões tributárias?', 
-          isUser: false, 
-          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
-        }
-      ])
     }
   }
 
   const handleSessionSelect = (sessionId: string) => {
     setActiveSession(sessionId)
-    loadSessionMessages(sessionId)
   }
 
   if (loading) {
@@ -141,7 +81,7 @@ export default function CodigoTributarioPage() {
     )
   }
 
-  const activeSessionName = sessions.find(s => s.id === activeSession)?.name || ''
+  const activeSessionData = sessions.find(s => s.id === activeSession)
 
   return (
     <div className="flex h-screen bg-base-100">
@@ -153,12 +93,19 @@ export default function CodigoTributarioPage() {
         <NewSessionForm onCreateSession={handleNewChat} />
       </SessionList>
 
-      <ChatArea
-        sessionName={activeSessionName}
-        messages={messages}
-        onSendMessage={handleSendMessage}
-        disabled={!activeSession}
-      />
+      {activeSession ? (
+        <ChatArea
+          sessionId={activeSession}
+          sessionName={activeSessionData?.name || ''}
+        />
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-2">Bem-vindo ao Chat Tributário</h2>
+            <p className="text-base-content/70">Selecione uma sessão ou crie uma nova para começar</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
