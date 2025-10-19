@@ -1,9 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Caminho para o banco SQLite
-DATABASE_URL = "sqlite:///./data/acfi.sqlite"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/acfi.sqlite")
 
 # Cria o diretório data se não existir
 os.makedirs("data", exist_ok=True)
