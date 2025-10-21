@@ -10,6 +10,11 @@ from .services.chat_service import ChatService
 from .models.chat_model import MessageRole
 from .database import get_db
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Carrega as variáveis de ambiente do arquivo .env
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
@@ -23,6 +28,7 @@ app.add_middleware(
         "http://localhost:3000",  # Frontend local
         "http://frontend:3000",   # Frontend no Docker
         "http://127.0.0.1:3000",
+        os.getenv("FRONTEND_URL", "")  # Variável de ambiente para o frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],
