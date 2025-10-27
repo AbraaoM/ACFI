@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session as DBSession
 
 from ..database import get_db
+from ..services.xml_service import XMLService
 
 router = APIRouter(prefix="/xml", tags=["xml"])
+xml_service = XMLService()
 
 @router.post("/upload", response_model=dict, status_code=status.HTTP_201_CREATED)
 def upload_xml(
@@ -26,24 +28,5 @@ def upload_xml(
             detail="Tipo de arquivo deve ser XML"
         )
     
-    try:
-        # Ler o conteúdo do arquivo
-        content = file.file.read()
-        
-        # Aqui você pode adicionar processamento específico do XML
-        # Por exemplo: validar estrutura, extrair dados, etc.
-        
-        return {
-            "message": "Arquivo XML processado com sucesso",
-            "filename": file.filename,
-            "size": len(content),
-            "content_type": file.content_type
-        }
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao processar arquivo XML: {str(e)}"
-        )
-    finally:
-        file.file.close()
+    # Delegar o processamento para o service
+    return xml_service.upload_and_process_xml(db, file)
