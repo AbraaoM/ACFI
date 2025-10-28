@@ -29,18 +29,6 @@ const menuItems: MenuItem[] = [
     href: '/documentos',
     icon: '📄',
     description: 'Gerenciar documentos'
-  },
-  {
-    name: 'Configurações',
-    href: '/configuracoes',
-    icon: '⚙️',
-    description: 'Configurações do sistema'
-  },
-  {
-    name: 'Ajuda',
-    href: '/ajuda',
-    icon: '❓',
-    description: 'Central de ajuda'
   }
 ]
 
@@ -48,7 +36,7 @@ interface MenuProps {
   collapsed?: boolean
 }
 
-export default function Menu({ collapsed = false }: MenuProps) {
+export default function Menu({ collapsed = true }: MenuProps) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(collapsed)
 
