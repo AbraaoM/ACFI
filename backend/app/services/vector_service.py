@@ -7,7 +7,8 @@ from typing import List, Dict, Any
 import os
 from dotenv import load_dotenv
 
-from backend.app.schemas.vector_metadata_schema import VectorMetadata
+from ..schemas.vector_metadata_schema import VectorMetadata
+
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -40,15 +41,16 @@ class VectorService:
             length_function=len,
         )
 
-    def ingest_document(self, document_id: str, content: str, metadata: VectorMetadata = None) -> List[str]:
+    def ingest_document(self, document_id: str, content: str, metadata: VectorMetadata) -> List[str]:
         """Ingere um documento no vector store"""
-        if metadata is None:
-            metadata = {}
-        else:
-            metadata = metadata
-        
-        # Adiciona o document_id aos metadados
-        metadata["document_id"] = document_id
+        # Converte o metadata para dict
+        base_metadata = {
+            "document_id": document_id,
+            "filename": metadata.filename,
+            "file_type": metadata.file_type,
+            "category": metadata.category.value,
+            "tags": metadata.tags
+        }
         
         # Divide o texto em chunks
         chunks = self.text_splitter.split_text(content)
@@ -56,7 +58,7 @@ class VectorService:
         # Adiciona metadados específicos para cada chunk
         metadatas = []
         for i, chunk in enumerate(chunks):
-            chunk_metadata = metadata.copy()
+            chunk_metadata = base_metadata.copy()
             chunk_metadata["chunk_index"] = i
             chunk_metadata["chunk_id"] = f"{document_id}_chunk_{i}"
             metadatas.append(chunk_metadata)
@@ -104,10 +106,10 @@ class VectorService:
             "count": collection.count(),
             "name": collection.name
         }
-    
-    def rag_query(self, query: str, k: int = 5) -> Dict[str, Any]:
+
+    def rag_query(self, query: str, k: int = 5, metadata: VectorMetadata = None) -> Dict[str, Any]:
         """Executa busca RAG completa: busca + contexto organizado"""
-        chunks = self.similarity_search(query, k)
+        chunks = self.similarity_search(query, k, metadata)
         
         return {
             "query": query,

@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session as DBSession
 from typing import List, Optional
 
+from ..schemas.vector_metadata_schema import VectorMetadata
+
 from ..database import get_db
 from ..services.chat_service import ChatService
 from ..services.rag_service import RAGService
@@ -16,6 +18,7 @@ def create_chat(
     session_id: str,
     question: str,
     k: Optional[int] = 5,
+    metadata: VectorMetadata = None,
     db: DBSession = Depends(get_db)
 ):
     """
@@ -30,7 +33,7 @@ def create_chat(
     ChatService.create_chat(db, session_id, MessageRole.USER, question)
     
     # Processa com RAG e citações
-    rag_result = rag_service.ask_question_with_citations(question, k)
+    rag_result = rag_service.ask_question_with_citations(question, k, metadata)
     
     # Salva a resposta do assistente no histórico
     ChatService.create_chat(db, session_id, MessageRole.ASSISTANT, rag_result["answer"])
