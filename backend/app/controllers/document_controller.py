@@ -16,10 +16,11 @@ rag_service = RAGService()
 def upload_document(
     file: UploadFile = File(...),
     category: DocumentCategory = DocumentCategory.LEGISLACAO,
+    tags: str = "",
     db: DBSession = Depends(get_db)
 ):
     """Upload e processa um documento"""
-    return document_service.upload_and_process_document(db, file, category)
+    return document_service.upload_and_process_document(db, file, category, tags)
 
 # READ ALL DOCUMENTS
 @router.get("/", response_model=List[dict])

@@ -8,6 +8,7 @@ from datetime import datetime
 from ..models.document_model import Document
 from .vector_service import VectorService
 from ..enums.document_category_enum import DocumentCategory
+from ..schemas.vector_metadata_schema import VectorMetadata
 
 class DocumentService:
     def __init__(self):
@@ -15,7 +16,7 @@ class DocumentService:
         self.upload_dir = "./uploads"
         os.makedirs(self.upload_dir, exist_ok=True)
 
-    def upload_and_process_document(self, db: DBSession, file: UploadFile, category: DocumentCategory) -> Dict:
+    def upload_and_process_document(self, db: DBSession, file: UploadFile, category: DocumentCategory, tags: str) -> Dict:
         """Upload e processa um documento"""
         
         # Salva o arquivo
@@ -43,15 +44,17 @@ class DocumentService:
             
             # Atualiza o conteúdo no banco
             document.content = content
-            
+
             # Ingere no vector store
             chunk_ids = self.vector_service.ingest_document(
                 document_id=document.id,
                 content=content,
-                metadata={
-                    "filename": document.filename,
-                    "file_type": document.file_type
-                }
+                metadata=VectorMetadata(
+                    filename=document.filename,
+                    file_type=document.file_type,
+                    category=document.category,
+                    tags=tags
+                )
             )
             
             # Atualiza status

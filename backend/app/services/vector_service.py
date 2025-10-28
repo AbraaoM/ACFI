@@ -7,6 +7,8 @@ from typing import List, Dict, Any
 import os
 from dotenv import load_dotenv
 
+from backend.app.schemas.vector_metadata_schema import VectorMetadata
+
 # Carrega variáveis de ambiente
 load_dotenv()
 
@@ -37,11 +39,13 @@ class VectorService:
             chunk_overlap=200,
             length_function=len,
         )
-    
-    def ingest_document(self, document_id: str, content: str, metadata: Dict[str, Any] = None) -> List[str]:
+
+    def ingest_document(self, document_id: str, content: str, metadata: VectorMetadata = None) -> List[str]:
         """Ingere um documento no vector store"""
         if metadata is None:
             metadata = {}
+        else:
+            metadata = metadata
         
         # Adiciona o document_id aos metadados
         metadata["document_id"] = document_id
