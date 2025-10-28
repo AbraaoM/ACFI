@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session as DBSession
-from typing import List, Dict, Any, Optional
+from typing import List, Dict
 from fastapi import HTTPException, status, UploadFile
 import PyPDF2
 import os

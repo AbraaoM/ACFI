@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session as DBSession
-from typing import List, Optional
+from typing import List
 
 from ..database import get_db
 from ..services.document_service import DocumentService

@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Tuple
 import os
 from dotenv import load_dotenv
 
