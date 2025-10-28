@@ -25,10 +25,10 @@ const menuItems: MenuItem[] = [
     description: 'Assistente para questões tributárias'
   },
   {
-    name: 'Documentos',
-    href: '/documentos',
+    name: 'Base de Conhecimento',
+    href: '/base-dados',
     icon: '📄',
-    description: 'Gerenciar documentos'
+    description: 'Gerenciar Base de Conhecimento'
   }
 ]
 
