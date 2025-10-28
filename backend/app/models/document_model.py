@@ -1,7 +1,12 @@
-from sqlalchemy import Column, String, DateTime, Text, Integer
+import enum
+from sqlalchemy import Column, Enum, String, DateTime, Text, Integer
 from sqlalchemy.sql import func
 import uuid
 from .session_model import Base
+
+class DocumentCategory(enum.Enum):
+    LEGISLACAO = "legislacao"
+    NOTAS_FISCAIS = "notas_fiscais"
 
 class Document(Base):
     __tablename__ = "documents"
@@ -13,6 +18,7 @@ class Document(Base):
     file_size = Column(Integer, nullable=False)
     content = Column(Text, nullable=True)  # texto extraído
     status = Column(String(50), default="pending")  # pending, processing, completed, error
+    category = Column(Enum(DocumentCategory), nullable=False, default=DocumentCategory.LEGISLACAO)
     chunks_count = Column(Integer, default=0)  # número de chunks gerados
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     processed_at = Column(DateTime(timezone=True), nullable=True)
