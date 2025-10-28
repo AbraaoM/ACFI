@@ -22,7 +22,8 @@ class RAGService:
                 "answer": "Não encontrei informações relevantes nos documentos disponíveis para responder sua pergunta.",
                 "sources": [],
                 "chunks_used": 0,
-                "cited_excerpts": []
+                "cited_excerpts": [],
+                "context_summary": "Nenhum documento relevante encontrado"
             }
         
         # 2. Gera resposta com citações usando o contexto

@@ -109,7 +109,25 @@ class VectorService:
 
     def rag_query(self, query: str, k: int = 5, metadata: VectorMetadata = None) -> Dict[str, Any]:
         """Executa busca RAG completa: busca + contexto organizado"""
-        chunks = self.similarity_search(query, k, metadata)
+        filter_dict = None
+        if metadata:
+            conditions = []
+            if metadata.filename:
+                conditions.append({"filename": {"$eq": metadata.filename}})
+            if metadata.file_type:
+                conditions.append({"file_type": {"$eq": metadata.file_type}})
+            if metadata.category:
+                conditions.append({"category": {"$eq": metadata.category.value}})
+            if metadata.tags:
+                conditions.append({"tags": {"$eq": metadata.tags}})
+            
+            if conditions:
+                if len(conditions) == 1:
+                    filter_dict = conditions[0]
+                else:
+                    filter_dict = {"$and": conditions}
+        
+        chunks = self.similarity_search(query, k, filter_dict)
         
         return {
             "query": query,
