@@ -19,7 +19,35 @@ load_dotenv()  # Carrega as variáveis de ambiente do arquivo .env
 async def lifespan(app: FastAPI):
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="ACFI - Assistente Jurídico com IA",
+    description="API para assistente jurídico com RAG (Retrieval-Augmented Generation)",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "sessions",
+            "description": "Gestão de sessões de conversa"
+        },
+        {
+            "name": "chats", 
+            "description": "Conversas e mensagens com IA"
+        },
+        {
+            "name": "documents",
+            "description": "Upload e gestão de documentos"
+        },
+        {
+            "name": "rag",
+            "description": "Busca semântica e RAG"
+        },
+        {
+            "name": "health",
+            "description": "Status e saúde da aplicação"
+        }
+    ]
+)
 
 # Configuração do CORS para aceitar requisições do frontend
 app.add_middleware(
