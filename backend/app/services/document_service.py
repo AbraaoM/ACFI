@@ -7,14 +7,15 @@ from datetime import datetime
 
 from ..models.document_model import Document
 from .vector_service import VectorService
+from ..enums.document_category_enum import DocumentCategory
 
 class DocumentService:
     def __init__(self):
         self.vector_service = VectorService()
         self.upload_dir = "./uploads"
         os.makedirs(self.upload_dir, exist_ok=True)
-    
-    def upload_and_process_document(self, db: DBSession, file: UploadFile) -> Dict:
+
+    def upload_and_process_document(self, db: DBSession, file: UploadFile, category: DocumentCategory) -> Dict:
         """Upload e processa um documento"""
         
         # Salva o arquivo
@@ -28,7 +29,8 @@ class DocumentService:
             file_path=file_path,
             file_type=file.filename.split('.')[-1].lower(),
             file_size=os.path.getsize(file_path),
-            status="processing"
+            status="processing",
+            category=category
         )
         
         db.add(document)

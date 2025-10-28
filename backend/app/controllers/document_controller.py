@@ -5,6 +5,7 @@ from typing import List
 from ..database import get_db
 from ..services.document_service import DocumentService
 from ..services.rag_service import RAGService
+from ..enums.document_category_enum import DocumentCategory
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 document_service = DocumentService()
@@ -14,10 +15,11 @@ rag_service = RAGService()
 @router.post("/upload", response_model=dict, status_code=status.HTTP_201_CREATED)
 def upload_document(
     file: UploadFile = File(...),
+    category: DocumentCategory = DocumentCategory.LEGISLACAO,
     db: DBSession = Depends(get_db)
 ):
     """Upload e processa um documento"""
-    return document_service.upload_and_process_document(db, file)
+    return document_service.upload_and_process_document(db, file, category)
 
 # READ ALL DOCUMENTS
 @router.get("/", response_model=List[dict])

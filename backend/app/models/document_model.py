@@ -1,13 +1,9 @@
-import enum
 from sqlalchemy import Column, Enum, String, DateTime, Text, Integer
 from sqlalchemy.sql import func
 import uuid
+
 from .session_model import Base
-
-class DocumentCategory(enum.Enum):
-    LEGISLACAO = "legislacao"
-    NOTAS_FISCAIS = "notas_fiscais"
-
+from ..enums.document_category_enum import DocumentCategory
 class Document(Base):
     __tablename__ = "documents"
     
