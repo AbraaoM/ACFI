@@ -19,31 +19,6 @@ def upload_document(
     """Upload e processa um documento"""
     return document_service.upload_and_process_document(db, file)
 
-# SEARCH DOCUMENTS BY SIMILARITY usando RAGService
-@router.get("/search", response_model=dict)
-def search_documents(
-    query: str = Query(..., description="Query para busca por similaridade"),
-    k: int = Query(5, description="Número de resultados")
-):
-    """Busca documentos por similaridade usando RAGService"""
-    rag_result = rag_service.vector_service.rag_query(query, k)
-    
-    return {
-        "query": query,
-        "results": rag_result["context_chunks"],
-        "total_found": rag_result["chunks_found"],
-        "summary": rag_result["context_summary"]
-    }
-
-# SEARCH WITH RAG ANSWER - Nova funcionalidade
-@router.get("/ask", response_model=dict)
-def ask_about_documents(
-    question: str = Query(..., description="Pergunta sobre os documentos"),
-    k: int = Query(5, description="Número de chunks para análise")
-):
-    """Faz uma pergunta sobre os documentos usando RAG completo"""
-    return rag_service.ask_question_with_citations(question, k)
-
 # READ ALL DOCUMENTS
 @router.get("/", response_model=List[dict])
 def get_documents(
@@ -66,7 +41,6 @@ def get_document(document_id: str, db: DBSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found"
         )
-    
     return document
 
 # DELETE DOCUMENT
