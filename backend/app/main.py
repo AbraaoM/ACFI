@@ -4,11 +4,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session as DBSession
 from typing import Optional
 
-from .controllers import session_controller, chat_controller, document_controller
-from .services.rag_service import RAGService
-from .services.chat_service import ChatService
-from .models.chat_model import MessageRole
-from .database import get_db
+from .controllers import session_controller, chat_controller, document_controller, dashboard_controller
 
 from dotenv import load_dotenv
 import os
@@ -67,6 +63,7 @@ app.add_middleware(
 app.include_router(session_controller.router, prefix="/api/v1")
 app.include_router(chat_controller.router, prefix="/api/v1")
 app.include_router(document_controller.router, prefix="/api/v1")
+app.include_router(dashboard_controller.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
