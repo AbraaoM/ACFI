@@ -1,4 +1,4 @@
-# 📋 ACFI - RAG Agent Backend
+# 📋 TRIBUT.AI - RAG Agent Backend
 
 Sistema de backend para agente RAG (Retrieval-Augmented Generation) usando FastAPI, SQLite, ChromaDB e Gemini.
 
@@ -102,7 +102,7 @@ Query → Busca semântica → Contexto relevante → Gemini Flash → Resposta
 
 ## 💾 Persistência de Dados
 
-### SQLite (`./data/acfi.sqlite`)
+### SQLite (`./data/TRIBUT.AI.sqlite`)
 - Metadados estruturados
 - Relacionamentos entre entidades
 - Histórico de conversas
@@ -130,7 +130,7 @@ Query → Busca semântica → Contexto relevante → Gemini Flash → Resposta
 ### 1. Clone o repositório
 ```bash
 git clone <repo-url>
-cd ACFI/backend
+cd TRIBUT.AI/backend
 ```
 
 ### 2. Crie e ative o ambiente virtual

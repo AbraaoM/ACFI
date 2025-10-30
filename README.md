@@ -1,4 +1,4 @@
-# ACFI - Sistema de Chat com IA
+# TRIBUT.AI - Sistema de Chat com IA
 
 Este projeto consiste em um sistema de chat com IA que utiliza FastAPI no backend e Next.js no frontend.
 
@@ -13,7 +13,7 @@ Este projeto consiste em um sistema de chat com IA que utiliza FastAPI no backen
 1. **Clone o repositório:**
 ```bash
 git clone <url-do-repositorio>
-cd ACFI
+cd TRIBUT.AI
 ```
 
 2. **Configure as variáveis de ambiente:**
@@ -113,7 +113,7 @@ npm run dev
 ## 📁 Estrutura do Projeto
 
 ```
-ACFI/
+TRIBUT.AI/
 ├── backend/                 # API FastAPI
 │   ├── app/
 │   │   ├── controllers/    # Controladores da API

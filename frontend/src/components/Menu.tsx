@@ -58,7 +58,7 @@ export default function Menu({ collapsed = true }: MenuProps) {
       <div className="p-4 border-b border-base-300">
         {!isCollapsed ? (
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-primary">ACFI</h2>
+            <h2 className="text-lg font-bold text-primary">TRIBUT.AI</h2>
             <button 
               onClick={toggleMenu}
               className="btn btn-ghost btn-sm"
@@ -119,7 +119,7 @@ export default function Menu({ collapsed = true }: MenuProps) {
       {!isCollapsed && (
         <div className="p-4">
           <div className="bg-base-300 rounded-lg p-3 text-sm">
-            <div className="font-medium text-primary">Sistema ACFI</div>
+            <div className="font-medium text-primary">Sistema TRIBUT.AI</div>
             <div className="text-xs opacity-70">
               Assistente de Código Fiscal Inteligente
             </div>

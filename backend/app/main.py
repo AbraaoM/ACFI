@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title="ACFI - Assistente Jurídico com IA",
+    title="TRIBUT.AI - Assistente Jurídico com IA",
     description="API para assistente jurídico com RAG (Retrieval-Augmented Generation)",
     version="1.0.0",
     docs_url="/docs",
@@ -67,7 +67,7 @@ app.include_router(dashboard_controller.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
-    return {"message": "ACFI API is running"}
+    return {"message": "TRIBUT.AI API is running"}
 
 @app.get("/health")
 def health_check():

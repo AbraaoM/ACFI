@@ -12,7 +12,7 @@ export default function HomePage() {
         <div className="hero-content text-center">
           <div className="max-w-4xl">
             <div className="text-6xl mb-4">🤖</div>
-            <h1 className="text-5xl font-bold text-primary mb-4">ACFI</h1>
+            <h1 className="text-5xl font-bold text-primary mb-4">TRIBUT.AI</h1>
             <h2 className="text-2xl font-semibold mb-6">Assistente Consultor Fiscal Inteligente</h2>
             <p className="text-lg mb-8 text-base-content/80 max-w-2xl mx-auto">
               Sistema de consulta fiscal com inteligência artificial. 
@@ -151,7 +151,7 @@ export default function HomePage() {
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold mb-6">Pronto para começar?</h2>
           <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
-            Experimente o ACFI agora e tenha um assistente fiscal inteligente
+            Experimente o TRIBUT.AI agora e tenha um assistente fiscal inteligente
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
@@ -174,7 +174,7 @@ export default function HomePage() {
       <footer className="footer footer-center p-10 bg-base-300">
         <div>
           <div className="text-2xl mb-2">🤖</div>
-          <p className="font-semibold text-primary">ACFI - Assistente Consultor Fiscal Inteligente</p>
+          <p className="font-semibold text-primary">TRIBUT.AI - Assistente Consultor Fiscal Inteligente</p>
           <p className="text-sm text-base-content/60">Sistema de consulta fiscal com IA</p>
         </div>
       </footer>

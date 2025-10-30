@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ACFI - RAG Agent",
+  title: "TRIBUT.AI - RAG Agent",
   description: "Sistema de chat com documentos usando RAG",
 };
 
