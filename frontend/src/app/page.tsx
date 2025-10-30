@@ -13,7 +13,6 @@ export default function HomePage() {
           <div className="max-w-4xl">
             <div className="text-6xl mb-4">🤖</div>
             <h1 className="text-5xl font-bold text-primary mb-4">TRIBUT.AI</h1>
-            <h2 className="text-2xl font-semibold mb-6">Assistente Consultor Fiscal Inteligente</h2>
             <p className="text-lg mb-8 text-base-content/80 max-w-2xl mx-auto">
               Sistema de consulta fiscal com inteligência artificial. 
               Faça upload de documentos, converse com a IA e visualize dados.
@@ -174,7 +173,7 @@ export default function HomePage() {
       <footer className="footer footer-center p-10 bg-base-300">
         <div>
           <div className="text-2xl mb-2">🤖</div>
-          <p className="font-semibold text-primary">TRIBUT.AI - Assistente Consultor Fiscal Inteligente</p>
+          <p className="font-semibold text-primary">TRIBUT.AI</p>
           <p className="text-sm text-base-content/60">Sistema de consulta fiscal com IA</p>
         </div>
       </footer>
