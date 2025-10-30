@@ -30,31 +30,31 @@ function FormattedMessage({ content, isUser }: { content: string; isUser: boolea
     let formatted = text.replace(/\n/g, '<br>')
     
     // Formatação para texto em negrito (**texto**)
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
     
     // Formatação para texto em itálico (*texto*)
-    formatted = formatted.replace(/(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/g, '<em>$1</em>')
+    formatted = formatted.replace(/(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/g, '<em class="text-white">$1</em>')
     
     // Formatação para código inline (`código`)
-    formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-base-300 px-1 rounded text-sm">$1</code>')
+    formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-base-content/20 px-1 rounded text-sm text-white">$1</code>')
     
     // Formatação para listas numeradas
-    formatted = formatted.replace(/^\d+\.\s+(.+)/gm, '<div class="ml-4 mb-1"><span class="font-semibold text-primary">•</span> $1</div>')
+    formatted = formatted.replace(/^\d+\.\s+(.+)/gm, '<div class="ml-4 mb-1"><span class="font-semibold text-white">•</span> <span class="text-white">$1</span></div>')
     
     // Formatação para listas com hífen
-    formatted = formatted.replace(/^-\s+(.+)/gm, '<div class="ml-4 mb-1"><span class="font-semibold text-secondary">•</span> $1</div>')
+    formatted = formatted.replace(/^-\s+(.+)/gm, '<div class="ml-4 mb-1"><span class="font-semibold text-white">•</span> <span class="text-white">$1</span></div>')
     
     // Formatação para títulos (## Título)
-    formatted = formatted.replace(/^##\s+(.+)/gm, '<h3 class="text-lg font-bold mt-3 mb-2 text-primary">$1</h3>')
+    formatted = formatted.replace(/^##\s+(.+)/gm, '<h3 class="text-lg font-bold mt-3 mb-2 text-white">$1</h3>')
     
     // Formatação para subtítulos (### Subtítulo)
-    formatted = formatted.replace(/^###\s+(.+)/gm, '<h4 class="text-md font-semibold mt-2 mb-1 text-secondary">$1</h4>')
+    formatted = formatted.replace(/^###\s+(.+)/gm, '<h4 class="text-md font-semibold mt-2 mb-1 text-white">$1</h4>')
     
     // Formatação para blocos de código (```código```)
-    formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre class="bg-base-300 p-3 rounded-lg mt-2 mb-2 overflow-x-auto"><code>$1</code></pre>')
+    formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre class="bg-base-content/20 p-3 rounded-lg mt-2 mb-2 overflow-x-auto text-white"><code class="text-white">$1</code></pre>')
     
     // Formatação para links [texto](url)
-    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="link link-primary" target="_blank" rel="noopener noreferrer">$1</a>')
+    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-200 underline hover:text-blue-100" target="_blank" rel="noopener noreferrer">$1</a>')
     
     return formatted
   }
