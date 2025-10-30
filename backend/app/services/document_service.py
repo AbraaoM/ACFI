@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session as DBSession
 from typing import List, Dict
 from fastapi import HTTPException, status, UploadFile
 import PyPDF2
+import xmltodict
 import os
 from datetime import datetime
 
@@ -86,9 +87,78 @@ class DocumentService:
             return self._extract_pdf_content(file_path)
         elif file_type == "txt":
             return self._extract_txt_content(file_path)
+        elif file_type == "xml":
+            return self._extract_xml_content(file_path)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
-    
+        
+    def _extract_xml_content(self, file_path: str) -> str:
+        """Extrai e formata APENAS os dados fiscais essenciais do XML de NF-e"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                xml_content = file.read()
+        except UnicodeDecodeError:
+            # Tenta com encoding diferente se UTF-8 falhar
+            try:
+                with open(file_path, 'r', encoding='iso-8859-1') as file:
+                    xml_content = file.read()
+            except:
+                with open(file_path, 'r', encoding='latin-1') as file:
+                    xml_content = file.read()
+        
+        # Remove BOM e caracteres problemáticos no início
+        xml_content = xml_content.strip()
+        if xml_content.startswith('\ufeff'):
+            xml_content = xml_content[1:]
+        
+        try:
+            # Converte XML para dicionário
+            data_dict = xmltodict.parse(xml_content)
+        except Exception as e:
+            # Se falhar, retorna o conteúdo como texto simples
+            return f"Erro ao processar XML: {str(e)}\n\nConteúdo original:\n{xml_content[:1000]}..."
+        
+        # 1. Obter a parte principal da NF-e (caminho varia dependendo do leiaute)
+        infNFe = data_dict.get('nfeProc', {}).get('NFe', {}).get('infNFe', {})
+        
+        if not infNFe: 
+            # Tenta outros caminhos comuns
+            infNFe = data_dict.get('NFe', {}).get('infNFe', {})
+            if not infNFe:
+                infNFe = data_dict.get('infNFe', {})
+        
+        if not infNFe:
+            return f"Dados fiscais não encontrados ou estrutura inválida.\n\nEstrutura encontrada: {list(data_dict.keys())}"
+
+        # 2. Extrair dados do cabeçalho (CFOP e Natureza)
+        ide = infNFe.get('ide', {})
+        summary = f"NOTA FISCAL RESUMO:\n"
+        summary += f"Chave de Acesso: {infNFe.get('@Id', 'N/A')}\n"
+        summary += f"Natureza da Operação: {ide.get('natOp', 'N/A')}\n"
+        summary += f"CFOP Principal: {ide.get('CFOP', 'N/A')}\n"
+        
+        # 3. Extrair dados dos itens (NCM e valores)
+        det = infNFe.get('det', [])
+        if not isinstance(det, list): 
+            det = [det]  # Garante que seja lista, mesmo com 1 item
+        
+        for item in det:
+            prod = item.get('prod', {})
+            imposto = item.get('imposto', {})
+            
+            # O RAG precisa do NCM e do Valor para a análise
+            summary += f"\nITEM NCM: {prod.get('NCM', 'N/A')}\n"
+            summary += f"  - Descrição Produto: {prod.get('xProd', 'N/A')}\n"
+            summary += f"  - Valor Produto: R$ {prod.get('vProd', 'N/A')}\n"
+            
+            # O RAG pode usar o CST/CSOSN para buscar regras específicas
+            icms_info = imposto.get('ICMS', {}).get('ICMS00', imposto.get('ICMS', {}).get('ICMS90', {}))
+            summary += f"  - CST/CSOSN: {icms_info.get('CST', 'N/A')}\n"
+        
+        print(summary)
+            
+        return summary.strip()
+
     def _extract_pdf_content(self, file_path: str) -> str:
         """Extrai texto de PDF"""
         with open(file_path, 'rb') as file:
