@@ -29,6 +29,12 @@ const menuItems: MenuItem[] = [
     href: '/base-dados',
     icon: '📄',
     description: 'Gerenciar Base de Conhecimento'
+  },
+    {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: '📊',
+    description: 'Visão geral do sistema'
   }
 ]
 
