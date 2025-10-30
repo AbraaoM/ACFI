@@ -20,7 +20,7 @@ const menuItems: MenuItem[] = [
   },
   {
     name: 'Chat Tributário',
-    href: '/codigo-tributario',
+    href: '/chat',
     icon: '💬',
     description: 'Assistente para questões tributárias'
   },
