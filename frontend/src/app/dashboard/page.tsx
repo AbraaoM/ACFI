@@ -27,22 +27,30 @@ interface Activity {
   chat_count: number;
 }
 
-interface NfeStats {
-  total_nfe: number;
+interface NfeValuesSummary {
   total_value: number;
+  nfe_count: number;
   average_value: number;
-  processed_today: number;
+  max_value: number;
+  min_value: number;
+}
+
+interface NfeStatistics {
+  total_nfes: number;
+  processed_nfes: number;
+  error_nfes: number;
+  processing_rate: number;
+  total_chunks: number;
+  avg_chunks_per_nfe: number;
 }
 
 interface CfopDistribution {
   cfop: string;
   count: number;
-  percentage: number;
 }
 
 interface NcmTop {
   ncm: string;
-  description: string;
   count: number;
 }
 
@@ -51,7 +59,8 @@ export default function DashboardPage() {
   const [recentChats, setRecentChats] = useState<RecentChat[]>([]);
   const [documentsByCategory, setDocumentsByCategory] = useState<DocumentCategory[]>([]);
   const [activity, setActivity] = useState<Activity[]>([]);
-  const [nfeStats, setNfeStats] = useState<NfeStats | null>(null);
+  const [nfeStats, setNfeStats] = useState<NfeStatistics | null>(null);
+  const [nfeValues, setNfeValues] = useState<NfeValuesSummary | null>(null);
   const [cfopDistribution, setCfopDistribution] = useState<CfopDistribution[]>([]);
   const [topNcms, setTopNcms] = useState<NcmTop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,12 +75,13 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       
-      const [stats, chats, docs, act, nfeData, cfopData, ncmData] = await Promise.all([
+      const [stats, chats, docs, act, nfeData, nfeValuesData, cfopData, ncmData] = await Promise.all([
         dashboardService.getSystemStats(),
         dashboardService.getRecentChats(5),
         dashboardService.getDocumentsByCategory(),
         dashboardService.getActivityByDay(7),
         dashboardService.getNfeStatistics(),
+        dashboardService.getNfeValuesSummary(),
         dashboardService.getNfeCfopDistribution(),
         dashboardService.getNfeNcmTop(5)
       ]);
@@ -81,6 +91,7 @@ export default function DashboardPage() {
       setDocumentsByCategory(docs.documents_by_category || []);
       setActivity(act.activity || []);
       setNfeStats(nfeData);
+      setNfeValues(nfeValuesData);
       setCfopDistribution(cfopData.cfop_distribution || []);
       setTopNcms(ncmData.top_ncms || []);
     } catch (error) {
@@ -157,34 +168,83 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Stats NFE */}
+          {/* Stats NFE - Processamento */}
           {nfeStats && (
             <div className="card bg-gradient-to-r from-info to-info-focus text-info-content shadow-xl mb-8">
               <div className="card-body">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="text-3xl">🧾</div>
-                  <h2 className="card-title text-2xl">Estatísticas de Notas Fiscais</h2>
+                  <h2 className="card-title text-2xl">Processamento de Notas Fiscais</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="stat bg-info-content text-info rounded-box">
                     <div className="stat-title text-info/70">Total NFe</div>
-                    <div className="stat-value text-lg">{formatNumber(nfeStats.total_nfe)}</div>
+                    <div className="stat-value text-lg">{formatNumber(nfeStats.total_nfes)}</div>
                   </div>
                   
                   <div className="stat bg-info-content text-info rounded-box">
-                    <div className="stat-title text-info/70">Valor Total</div>
-                    <div className="stat-value text-sm">{formatCurrency(nfeStats.total_value)}</div>
+                    <div className="stat-title text-info/70">Processadas</div>
+                    <div className="stat-value text-lg">{formatNumber(nfeStats.processed_nfes)}</div>
                   </div>
                   
                   <div className="stat bg-info-content text-info rounded-box">
-                    <div className="stat-title text-info/70">Valor Médio</div>
-                    <div className="stat-value text-sm">{formatCurrency(nfeStats.average_value)}</div>
+                    <div className="stat-title text-info/70">Taxa de Sucesso</div>
+                    <div className="stat-value text-lg">{formatPercentage(nfeStats.processing_rate)}%</div>
                   </div>
                   
                   <div className="stat bg-info-content text-info rounded-box">
-                    <div className="stat-title text-info/70">Processadas Hoje</div>
-                    <div className="stat-value text-lg">{formatNumber(nfeStats.processed_today)}</div>
+                    <div className="stat-title text-info/70">Com Erro</div>
+                    <div className="stat-value text-lg">{formatNumber(nfeStats.error_nfes)}</div>
+                  </div>
+                  
+                  <div className="stat bg-info-content text-info rounded-box">
+                    <div className="stat-title text-info/70">Total Chunks</div>
+                    <div className="stat-value text-lg">{formatNumber(nfeStats.total_chunks)}</div>
+                  </div>
+                  
+                  <div className="stat bg-info-content text-info rounded-box">
+                    <div className="stat-title text-info/70">Média Chunks/NFe</div>
+                    <div className="stat-value text-lg">{formatNumber(nfeStats.avg_chunks_per_nfe)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Stats NFE - Valores */}
+          {nfeValues && (
+            <div className="card bg-gradient-to-r from-success to-success-focus text-success-content shadow-xl mb-8">
+              <div className="card-body">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-3xl">💰</div>
+                  <h2 className="card-title text-2xl">Resumo Financeiro das NFes</h2>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="stat bg-success-content text-success rounded-box">
+                    <div className="stat-title text-success/70">NFes Analisadas</div>
+                    <div className="stat-value text-lg">{formatNumber(nfeValues.nfe_count)}</div>
+                  </div>
+                  
+                  <div className="stat bg-success-content text-success rounded-box">
+                    <div className="stat-title text-success/70">Valor Total</div>
+                    <div className="stat-value text-sm">{formatCurrency(nfeValues.total_value)}</div>
+                  </div>
+                  
+                  <div className="stat bg-success-content text-success rounded-box">
+                    <div className="stat-title text-success/70">Valor Médio</div>
+                    <div className="stat-value text-sm">{formatCurrency(nfeValues.average_value)}</div>
+                  </div>
+                  
+                  <div className="stat bg-success-content text-success rounded-box">
+                    <div className="stat-title text-success/70">Maior Valor</div>
+                    <div className="stat-value text-sm">{formatCurrency(nfeValues.max_value)}</div>
+                  </div>
+                  
+                  <div className="stat bg-success-content text-success rounded-box">
+                    <div className="stat-title text-success/70">Menor Valor</div>
+                    <div className="stat-value text-sm">{formatCurrency(nfeValues.min_value)}</div>
                   </div>
                 </div>
               </div>
@@ -250,14 +310,9 @@ export default function DashboardPage() {
                     {cfopDistribution.slice(0, 5).map((item, index) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <span className="badge badge-secondary">{item.cfop}</span>
+                          <span className="badge badge-lg badge-secondary">{item.cfop}</span>
                         </div>
-                        <div className="text-right">
-                          <div className="badge badge-primary">{formatNumber(item.count)}</div>
-                          <div className="text-xs text-base-content/60 mt-1">
-                            {formatPercentage(item.percentage)}%
-                          </div>
-                        </div>
+                        <span className="badge badge-primary badge-lg">{formatNumber(item.count)}</span>
                       </div>
                     ))}
                   </div>
@@ -320,18 +375,9 @@ export default function DashboardPage() {
                 ) : topNcms.length > 0 ? (
                   <div className="space-y-3">
                     {topNcms.map((item, index) => (
-                      <div key={index} className="card bg-base-100 shadow-sm">
-                        <div className="card-body p-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="badge badge-secondary mb-1">{item.ncm}</div>
-                              <p className="text-xs text-base-content/70 line-clamp-2">
-                                {item.description}
-                              </p>
-                            </div>
-                            <span className="badge badge-primary ml-2">{formatNumber(item.count)}</span>
-                          </div>
-                        </div>
+                      <div key={index} className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
+                        <span className="badge badge-lg badge-secondary">{item.ncm}</span>
+                        <span className="badge badge-primary badge-lg">{formatNumber(item.count)}</span>
                       </div>
                     ))}
                   </div>
@@ -354,7 +400,7 @@ export default function DashboardPage() {
                   <h2 className="card-title text-primary">Atividade dos Últimos 7 Dias</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                   {activity.map((item, index) => (
                     <div key={index} className="stat bg-base-200 rounded-box">
                       <div className="stat-title text-xs">

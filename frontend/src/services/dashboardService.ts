@@ -7,22 +7,22 @@ export function DashboardService() {
   };
 
   const getRecentChats = async (limit: number = 10) => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/recent_chats?limit=${limit}`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/recent-chats?limit=${limit}`);
     return res.json();
   };
 
   const getDocumentsByCategory = async () => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/documents_by_category`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/documents-by-category`);
     return res.json();
   };
 
   const getActivityByDay = async (days: number = 7) => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/activity_by_day?days=${days}`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/activity-by-day?days=${days}`);
     return res.json();
   };
 
   const getMostActiveSessions = async (limit: number = 5) => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/most_active_sessions?limit=${limit}`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/most-active-sessions?limit=${limit}`);
     return res.json();
   };
 
@@ -32,17 +32,17 @@ export function DashboardService() {
   };
 
   const getNfeCfopDistribution = async () => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/nfe/cfop_distribution`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/nfe/cfop-distribution`);
     return res.json();
   };
 
   const getNfeNcmTop = async (limit: number = 10) => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/nfe/ncm_top?limit=${limit}`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/nfe/ncm-top?limit=${limit}`);
     return res.json();
   };
 
   const getNfeValuesSummary = async () => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/nfe/values_summary`);
+    const res = await fetch(`${API_BASE_URL}/dashboard/nfe/values-summary`);
     return res.json();
   };
 
