@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session as DBSession
 from typing import List
 
@@ -15,10 +15,11 @@ rag_service = RAGService()
 @router.post("/upload", response_model=dict, status_code=status.HTTP_201_CREATED)
 def upload_document(
     file: UploadFile = File(...),
-    category: DocumentCategory = DocumentCategory.LEGISLACAO,
-    tags: str = "",
+    category: DocumentCategory = Form(DocumentCategory.LEGISLACAO),
+    tags: str = Form(""),
     db: DBSession = Depends(get_db)
 ):
+    print("Recebido arquivo para upload:", category, type(category))
     """Upload e processa um documento"""
     return document_service.upload_and_process_document(db, file, category, tags)
 
