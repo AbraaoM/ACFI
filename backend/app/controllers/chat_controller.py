@@ -29,11 +29,19 @@ def create_chat(
     - Salva histórico da conversa
     """
     
+    # Busca o histórico da conversa (últimas N mensagens)
+    chat_history = ChatService.get_chats_by_session(db, session_id, skip=0, limit=10)
+    
     # Salva a pergunta do usuário no histórico
     ChatService.create_chat(db, session_id, MessageRole.USER, question)
     
-    # Processa com RAG e citações
-    rag_result = rag_service.ask_question_with_citations(question, k, metadata)
+    # Processa com RAG e citações, incluindo o contexto da conversa
+    rag_result = rag_service.ask_question_with_citations(
+        question=question, 
+        k=k, 
+        metadata=metadata,
+        chat_history=chat_history
+    )
     
     # Salva a resposta do assistente no histórico
     ChatService.create_chat(db, session_id, MessageRole.ASSISTANT, rag_result["answer"])

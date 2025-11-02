@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 
 from ..schemas.vector_metadata_schema import VectorMetadata
 from .vector_service import VectorService
@@ -9,8 +9,14 @@ class RAGService:
         self.vector_service = VectorService()
         self.llm_service = LLMService()
 
-    def ask_question_with_citations(self, question: str, k: int = 5, metadata: VectorMetadata = None) -> Dict[str, Any]:
-        """Processa uma pergunta usando RAG completo com citações"""
+    def ask_question_with_citations(
+        self, 
+        question: str, 
+        k: int = 5, 
+        metadata: VectorMetadata = None,
+        chat_history: List[Dict] = None
+    ) -> Dict[str, Any]:
+        """Processa uma pergunta usando RAG completo com citações e histórico de conversa"""
         
         # 1. Busca documentos relevantes
         rag_result = self.vector_service.rag_query(question, k, metadata)
@@ -26,8 +32,12 @@ class RAGService:
                 "context_summary": "Nenhum documento relevante encontrado"
             }
         
-        # 2. Gera resposta com citações usando o contexto
-        answer, sources = self.llm_service.generate_response_with_citations(question, context_chunks)
+        # 2. Gera resposta com citações usando o contexto E o histórico da conversa
+        answer, sources = self.llm_service.generate_response_with_citations(
+            question, 
+            context_chunks,
+            chat_history=chat_history
+        )
         
         # 3. Prepara trechos citados para exibição
         cited_excerpts = [
