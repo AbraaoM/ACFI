@@ -97,6 +97,15 @@ export default function BaseDadosPage() {
     return `${truncatedName}...${extension}`;
   };
 
+  const getTotalSize = () => {
+    const totalBytes = documents.reduce((acc, doc) => acc + doc.file_size, 0);
+    return formatFileSize(totalBytes);
+  };
+
+  const getDocumentsByCategory = (cat: string) => {
+    return documents.filter(d => d.category === cat).length;
+  };
+
   return (
     <div className="flex h-screen bg-base-100">
       <Menu />
@@ -117,22 +126,25 @@ export default function BaseDadosPage() {
               </div>
               <div className="stat-title text-primary-content/70">Total de Documentos</div>
               <div className="stat-value">{documents.length}</div>
+              <div className="stat-desc text-primary-content/60">{getTotalSize()} em armazenamento</div>
             </div>
             
             <div className="stat bg-secondary text-secondary-content rounded-box">
               <div className="stat-figure">
-                <div className="text-3xl">🔄</div>
+                <div className="text-3xl">⚖️</div>
               </div>
-              <div className="stat-title text-secondary-content/70">Processados</div>
-              <div className="stat-value">{documents.filter(d => d.status === 'completed').length}</div>
+              <div className="stat-title text-secondary-content/70">Legislação</div>
+              <div className="stat-value">{getDocumentsByCategory('legislacao')}</div>
+              <div className="stat-desc text-secondary-content/60">documentos legais</div>
             </div>
             
             <div className="stat bg-accent text-accent-content rounded-box">
               <div className="stat-figure">
-                <div className="text-3xl">🧩</div>
+                <div className="text-3xl">🧾</div>
               </div>
-              <div className="stat-title text-accent-content/70">Total de Chunks</div>
-              <div className="stat-value">{documents.reduce((acc, doc) => acc + doc.chunks_count, 0)}</div>
+              <div className="stat-title text-accent-content/70">Notas Fiscais</div>
+              <div className="stat-value">{getDocumentsByCategory('notas_fiscais')}</div>
+              <div className="stat-desc text-accent-content/60">NFes processadas</div>
             </div>
           </div>
 
@@ -279,11 +291,6 @@ export default function BaseDadosPage() {
                             <span className={`badge badge-sm ${getStatusBadge(doc.status)}`}>
                               {doc.status}
                             </span>
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <span className="text-base-content/70">Chunks:</span>
-                            <span className="badge badge-info badge-sm">{doc.chunks_count}</span>
                           </div>
                           
                           <div className="flex justify-between">

@@ -211,7 +211,8 @@ class DocumentService:
                 "status": doc.status,
                 "chunks_count": doc.chunks_count,
                 "created_at": doc.created_at,
-                "processed_at": doc.processed_at
+                "processed_at": doc.processed_at,
+                "category": doc.category.value
             }
             for doc in documents
         ]
