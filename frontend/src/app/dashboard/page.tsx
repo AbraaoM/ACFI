@@ -252,78 +252,7 @@ export default function DashboardPage() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Chats Recentes */}
-            <div className="card bg-base-200 shadow-xl">
-              <div className="card-body">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="text-2xl">💭</div>
-                  <h2 className="card-title text-primary">Chats Recentes</h2>
-                </div>
-                
-                {loading ? (
-                  <div className="flex justify-center items-center py-8">
-                    <span className="loading loading-spinner loading-lg text-primary"></span>
-                  </div>
-                ) : recentChats.length > 0 ? (
-                  <div className="space-y-3">
-                    {recentChats.map((chat) => (
-                      <div key={chat.id} className="card bg-base-100 shadow-sm">
-                        <div className="card-body p-4">
-                          <p className="text-sm text-base-content/80 line-clamp-2">
-                            {chat.question}
-                          </p>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="badge badge-outline badge-sm">
-                              Sessão #{formatNumber(chat.session_id)}
-                            </span>
-                            <span className="text-xs text-base-content/60">
-                              {new Date(chat.created_at).toLocaleDateString('pt-BR')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-2">💬</div>
-                    <p className="text-base-content/70">Nenhum chat encontrado</p>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Top CFOPs */}
-            <div className="card bg-base-200 shadow-xl">
-              <div className="card-body">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="text-2xl">📋</div>
-                  <h2 className="card-title text-primary">Top CFOPs</h2>
-                </div>
-                
-                {loading ? (
-                  <div className="flex justify-center items-center py-8">
-                    <span className="loading loading-spinner loading-lg text-primary"></span>
-                  </div>
-                ) : cfopDistribution.length > 0 ? (
-                  <div className="space-y-3">
-                    {cfopDistribution.slice(0, 5).map((item, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <span className="badge badge-lg badge-secondary">{item.cfop}</span>
-                        </div>
-                        <span className="badge badge-primary badge-lg">{formatNumber(item.count)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-2">📋</div>
-                    <p className="text-base-content/70">Nenhum CFOP encontrado</p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
