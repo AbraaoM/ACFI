@@ -182,11 +182,28 @@ class DashboardService:
         
         for doc in nfe_documents:
             if doc.content:
-                # Extrai NCMs do conteúdo processado
-                ncm_matches = re.findall(r'ITEM \d+ NCM: (\d+)', doc.content)
+                print(f"Processing document: {doc.filename}")
+                print(f"Content preview: {doc.content[:500]}")  # Debug
+                
+                # Tenta diferentes padrões de regex
+                # Padrão 1: ITEM X NCM: 12345678
+                ncm_matches = re.findall(r'ITEM \d+:\s*\n\s*- CFOP: \d+\s*\n\s*- Descrição Produto: [^\n]+\s*\n\s*- Valor Produto: R\$ [\d,\.]+', doc.content)
+                
+                # Se não encontrar, tenta padrão mais simples
+                if not ncm_matches:
+                    ncm_matches = re.findall(r'NCM[:\s]+(\d{8})', doc.content)
+                
+                # Padrão original como fallback
+                if not ncm_matches:
+                    ncm_matches = re.findall(r'ITEM \d+ NCM: (\d+)', doc.content)
+                
+                print(f"Found NCMs: {ncm_matches}")  # Debug
+                
                 for ncm in ncm_matches:
-                    if ncm != "N/A":
+                    if ncm != "N/A" and ncm.isdigit():
                         ncm_count[ncm] = ncm_count.get(ncm, 0) + 1
+        
+        print(f"NCM Count: {ncm_count}")  # Debug
         
         # Retorna os top NCMs
         top_ncms = sorted(ncm_count.items(), key=lambda x: x[1], reverse=True)[:limit]
