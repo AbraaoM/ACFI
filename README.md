@@ -251,7 +251,8 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 ## 👥 Autores
 
-- **Abraão Martins** - [AbraaoM](https://github.com/AbraaoM)
+- **Abraão Moreira** - [AbraaoM](https://github.com/AbraaoM)
+- **Verônica Barros**
 
 ## 🙏 Agradecimentos
 
