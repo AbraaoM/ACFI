@@ -227,32 +227,76 @@ class DashboardService:
         nfe_count = 0
         values = []
         
+        # Estatísticas de impostos
+        total_icms = 0
+        total_ipi = 0
+        total_pis = 0
+        total_cofins = 0
+        
         for doc in nfe_documents:
             if doc.content:
-                # Extrai valores dos produtos
-                value_matches = re.findall(r'Valor Produto: R\$ ([\d,\.]+)', doc.content)
-                nfe_total = 0
+                # Extrai o VALOR TOTAL DA NOTA usando regex no novo formato
+                valor_total_match = re.search(r'VALOR TOTAL DA NOTA: R\$ ([\d,\.]+)', doc.content)
                 
-                for value_str in value_matches:
-                    if value_str != "N/A":
-                        try:
-                            # Converte string para float (assume formato brasileiro)
-                            value = float(value_str.replace(',', '.'))
-                            nfe_total += value
-                        except ValueError:
-                            continue
+                if valor_total_match:
+                    valor_str = valor_total_match.group(1)
+                    try:
+                        # Converte string para float (formato brasileiro: 54.918,00 ou 54918.00)
+                        valor_str = valor_str.replace('.', '').replace(',', '.')  # Remove separador de milhar e converte vírgula
+                        valor = float(valor_str)
+                        
+                        values.append(valor)
+                        total_value += valor
+                        nfe_count += 1
+                    except ValueError:
+                        pass
                 
-                if nfe_total > 0:
-                    values.append(nfe_total)
-                    total_value += nfe_total
-                    nfe_count += 1
+                # Extrai valores de impostos dos totais
+                icms_match = re.search(r'Valor ICMS: R\$ ([\d,\.]+)', doc.content)
+                if icms_match:
+                    try:
+                        valor_str = icms_match.group(1).replace('.', '').replace(',', '.')
+                        total_icms += float(valor_str)
+                    except ValueError:
+                        pass
+                
+                ipi_match = re.search(r'Valor do IPI: R\$ ([\d,\.]+)', doc.content)
+                if ipi_match:
+                    try:
+                        valor_str = ipi_match.group(1).replace('.', '').replace(',', '.')
+                        total_ipi += float(valor_str)
+                    except ValueError:
+                        pass
+                
+                pis_match = re.search(r'Valor do PIS: R\$ ([\d,\.]+)', doc.content)
+                if pis_match:
+                    try:
+                        valor_str = pis_match.group(1).replace('.', '').replace(',', '.')
+                        total_pis += float(valor_str)
+                    except ValueError:
+                        pass
+                
+                cofins_match = re.search(r'Valor do COFINS: R\$ ([\d,\.]+)', doc.content)
+                if cofins_match:
+                    try:
+                        valor_str = cofins_match.group(1).replace('.', '').replace(',', '.')
+                        total_cofins += float(valor_str)
+                    except ValueError:
+                        pass
         
         return {
             "total_value": round(total_value, 2),
             "nfe_count": nfe_count,
             "average_value": round(total_value / nfe_count, 2) if nfe_count > 0 else 0,
             "max_value": round(max(values), 2) if values else 0,
-            "min_value": round(min(values), 2) if values else 0
+            "min_value": round(min(values), 2) if values else 0,
+            "tax_summary": {
+                "total_icms": round(total_icms, 2),
+                "total_ipi": round(total_ipi, 2),
+                "total_pis": round(total_pis, 2),
+                "total_cofins": round(total_cofins, 2),
+                "total_taxes": round(total_icms + total_ipi + total_pis + total_cofins, 2)
+            }
         }
     
     def get_nfe_processing_timeline(self, days: int = 30):
