@@ -10,7 +10,7 @@ interface CreateChatRequest {
 
 export function ChatService() {
   const createChat = async (request: CreateChatRequest) => {
-    const { session_id, question, k = 5 } = request;
+    const { session_id, question, k = 50 } = request;
     const response = await fetch(`${API_BASE_URL}/chats?session_id=${session_id}&question=${encodeURIComponent(question)}&k=${k}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
